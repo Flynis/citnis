@@ -1,0 +1,34 @@
+\documentclass[14pt, a4paper]{extreport}
+
+
+\usepackage{nirstyle}
+\usepackage{subfiles}
+\usepackage{relsize}
+\usepackage{tabularray}
+\usepackage{cmap}
+\usepackage{graphicx}
+
+
+\begin{document}
+
+
+\subfile{sections/title}
+
+
+\setcounter{page}{2}
+\renewcommand{\contentsname}{\hfill\Large\MakeUppercase{Содержание} \hfill\null}
+\tableofcontents
+
+
+\subfile{sections/introduction}
+
+
+\subfile{sections/infological}
+
+
+\subfile{sections/logical}
+
+\subfile{sections/trigers}
+
+
+\end{document}

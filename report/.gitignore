@@ -1,0 +1,20 @@
+## Common LaTeX files
+*.out
+*.aux
+*.log
+
+## Table of contents file
+*.toc
+*.fls
+*.synctex.*
+*.fdb_*
+
+## Bib files
+*.bbl
+*.blg
+
+## Output file
+*.pdf
+
+## Merge conflicts files
+*.orig
