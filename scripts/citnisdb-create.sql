@@ -135,6 +135,7 @@ CREATE TABLE subsriptions
   subscriber_id     int        NOT NULL,
   phone_type device_type DEFAULT 'Common' NOT NULL, 
   PRIMARY KEY ( subsription_id ),
+  UNIQUE ( phone_id, subscriber_id ),
   FOREIGN KEY ( phone_id )
     REFERENCES phone_numbers ( phone_id )
     ON DELETE CASCADE,
