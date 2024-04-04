@@ -30,31 +30,31 @@
 Все ссылочные (целевые) отношения имеют сурогатный ключ, который
 нам незачем изменять. Поэтому для обеспечения ссылочной целостности
 при удалении будем использовать политику каскадного удаления, 
-а при обновлении - ничего не делать. Также, Абонемент имеет второй
-потенциальный ключ - (абонент, номер телефона), который мы заменили 
-сурогатным ключ, поэтому нужно наложить ограничение UNIQUE на второй ключ.
+а при обновлении - ничего не делать. Сущности Абонент, Номер телефона,
+Город, Район, Улица, Адрес имеют второй потенциальный ключ,
+наложим ограничение UNIQUE на него.
 
-Кроме того, нам понадобится тип конечного устройства (телефона) - перечисление 
-device\_type = (``Common'', ``Parallel'', ``Paired''). 
+Кроме того, нам понадобится тип конечного устройства (телефона) в виде 
+перечисления device\_type = (``Common'', ``Parallel'', ``Paired''). 
 \newpage
 \begin{longtblr}[caption={Реляционная схема базы данных}, theme = TC,]{
         colspec={|X[3]|X[3]|X[3]|X[1]|X[4]|}, row{1} = {c}, hlines,
     }
     Отношение & Атрибут & Тип & Not null & Ограничения \\
-    \SetCell[r=4]{c} ATS & ats\_id & serial & + & PK \\ 
+    \SetCell[r=4]{c} ATS & ats\_id & int & + & PK \\ 
     & ats\_owner & text & - & \\
     & first\_phone\_no & int & + & $(0, 1'000'000'000)$ \\
     & last\_phone\_no & int & + & $(1, 1'000'000'000)$, $last>first$ \\ 
     \SetCell[r=1]{c} City ATS & ats\_id & int & + & PK-FK \\
     \SetCell[r=1]{c} Department ATS & ats\_id & int & + & PK-FK \\
     \SetCell[r=1]{c} Institution ATS & ats\_id & int & + & PK-FK \\ 
-    \SetCell[r=3]{c} Phone & phone\_id & serial & + & PK \\
+    \SetCell[r=4]{c} Phone & phone\_id & int & + & PK \\
     & ats\_id & int & + & FK \\ 
     & address\_id & int & + & FK \\ 
-    \SetCell[r=1]{c} Payphone & phone\_id & int & + & PK-FK \\
-    \SetCell[r=3]{c} Phone number & phone\_id & int & + & PK-FK \\ 
-    & apartment & int & - & $>0$ \\ 
     & phone\_no & int & + & $(0, 1'000'000'000)$ \\
+    \SetCell[r=1]{c} Payphone & phone\_id & int & + & PK-FK \\
+    \SetCell[r=2]{c} Phone number & phone\_id & int & + & PK-FK \\ 
+    & apartment & int & - & $>0$ \\ 
     \SetCell[r=8]{c} Subsriber (Абонент) & subsriber\_id & serial & + & PK \\ 
     & first\_name & text & + & \\
     & last\_name & text & + & \\

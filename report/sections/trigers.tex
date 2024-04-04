@@ -3,6 +3,48 @@
 \begin{document}
 \chapter{Хранимые процедуры и триггеры}
 
+\section{Наследование}
+
+Отношение супертип-подтип в нашей схеме выражено как связь 1:1. 
+Для того, чтобы нам было удобно работать с подтипами, создадим
+для каждого свое представление и все операции INSERT, UPDATE, DELETE
+реализуем через триггеры INSTEAD OF на эти представления, которые,
+например в случае INSERT, будут осуществлять вставку сначала в 
+таблицу супертипа, а потом с тем же ключом в таблицу подтипа.
+И для автоматической генерации ключа заведем последовательность 
+для каждого базового типа, чтобы ключи у подтипов не повторялись.
+Пример для INSERT в City ATS:
+\begin{lstlisting}
+CREATE SEQUENCE ats_id_seq AS integer;
+
+CREATE VIEW city_ats_v AS
+    SELECT *
+    FROM ats 
+    JOIN city_ats USING(ats_id); 
+
+CREATE FUNCTION city_ats_insert_row() trigger AS $$
+DECLARE
+    id integer := nextval('ats_id_seq');
+BEGIN
+    INSERT INTO ats (ats_id, ats_owner, 
+                    first_phone_no, 
+                    last_phone_no)
+        VALUES(id, NEW.ats_owner, 
+                NEW.first_phone_no, 
+                NEW.last_phone_no);
+    INSERT INTO city_ats (ats_id)
+        VALUES(id);
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER city_ats_insert 
+    INSTEAD OF INSERT ON city_ats_v
+    FOR EACH ROW EXECUTE PROCEDURE city_ats_insert_row();
+\end{lstlisting}
+
+Для UPDATE и DELETE аналогично, ровно как и для иерархии с супертипом
+Телефон.
+
 \section{Тригеры}
 
 У АТС имеется диапозон доступных номеров телефонов. При расширении этого 
@@ -22,11 +64,31 @@ BEGIN
     END IF;
 END;
 $$ LANGUAGE plpgsql;
-CREATE TRIGGER prohibit_ats_reduction BEFORE UPDATE ON ats
+CREATE TRIGGER prohibit_ats_reduction 
+    BEFORE UPDATE ON ats
     FOR EACH ROW EXECUTE PROCEDURE prohibit_ats_reduction();
 \end{lstlisting}
 
-При вставке/изменении
-номера телефона мы должны проверить, что он попадает в указанный диапозон.
+При вставке/изменении номера телефона мы должны проверить, 
+что он попадает в указанный в АТС диапозон.
+
+\begin{lstlisting}
+CREATE FUNCTION check_phone_number_row() trigger AS $$
+DECLARE
+    rec record;
+BEGIN
+    SELECT * INTO rec FROM ats WHERE ats_id = NEW.ats_id;
+    IF (NEW.phone_no > rec.last_phone_no OR
+         NEW.phone_no < rec.first_phone_no)
+    THEN
+        RETURN NULL;
+    ELSE
+        RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER check_phone_number 
+    BEFORE INSERT OR UPDATE ON ats
+    FOR EACH ROW EXECUTE PROCEDURE check_phone_number_row();
+\end{lstlisting}
 
 \end{document}
