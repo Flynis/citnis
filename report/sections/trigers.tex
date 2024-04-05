@@ -53,20 +53,18 @@ CREATE TRIGGER city_ats_insert
 диапозон номеров.
 
 \begin{lstlisting}
-CREATE FUNCTION prohibit_ats_reduction() trigger AS $$
+CREATE FUNCTION prohibit_ats_reduction_row() trigger AS $$
 BEGIN
     IF (NEW.first_phone_no > OLD.first_phone_no OR
          NEW.last_phone_no < OLD.last_phone_no)
-    THEN
-        RETURN NULL;
-    ELSE
-        RETURN NEW;
+    THEN RETURN NULL;
+    ELSE RETURN NEW;
     END IF;
 END;
 $$ LANGUAGE plpgsql;
 CREATE TRIGGER prohibit_ats_reduction 
     BEFORE UPDATE ON ats
-    FOR EACH ROW EXECUTE PROCEDURE prohibit_ats_reduction();
+    FOR EACH ROW EXECUTE PROCEDURE prohibit_ats_reduction_row();
 \end{lstlisting}
 
 При вставке/изменении номера телефона мы должны проверить, 
@@ -80,15 +78,106 @@ BEGIN
     SELECT * INTO rec FROM ats WHERE ats_id = NEW.ats_id;
     IF (NEW.phone_no > rec.last_phone_no OR
          NEW.phone_no < rec.first_phone_no)
-    THEN
-        RETURN NULL;
-    ELSE
-        RETURN NEW;
+    THEN RETURN NULL;
+    ELSE RETURN NEW;
+    END IF;
 END;
 $$ LANGUAGE plpgsql;
 CREATE TRIGGER check_phone_number 
     BEFORE INSERT OR UPDATE ON ats
     FOR EACH ROW EXECUTE PROCEDURE check_phone_number_row();
+\end{lstlisting}
+
+Чтобы не терять должников, не будем удалять их. То есть запретим
+удаление абонентов с задолжностью.
+
+\begin{lstlisting}
+CREATE FUNCTION prohibit_debtor_remove_row() trigger AS $$
+BEGIN
+    IF (OLD.debt > 0)
+    THEN RETURN NULL;
+    ELSE RETURN OLD;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER prohibit_debtor_remove 
+    BEFORE DELETE ON subscribers
+    FOR EACH ROW 
+    EXECUTE PROCEDURE prohibit_debtor_remove_row();
+\end{lstlisting}
+
+При вставке/обновлении абонемента нам нужно проверить, чтобы у
+обычных и спаренных телефонов был один владелец, а у владельцев
+параллельных - был одинаковый адрес. Кроме того, для нового абонемента
+будем сразу подключать услугу ``Звонок''.
+
+\begin{lstlisting}
+CREATE FUNCTION subscription_phone_check_row() trigger AS $$
+DECLARE
+    rec record;
+BEGIN
+    IF (NEW.phone_type = 'Parallel')
+    THEN
+        SELECT COUNT(*) AS other_address_count INTO rec 
+            FROM subscriptions 
+            JOIN phones USING(phone_id)
+            WHERE (phone_id = NEW.phone_id AND 
+                    address_id != NEW.address_id)
+            GROUP BY phone_id;
+        IF (rec.owners_count > 0)
+        THEN RETURN NULL;
+        ELSE RETURN NEW;
+        END IF;
+    ELSE
+        SELECT COUNT(*) AS owners_count INTO rec 
+            FROM subscriptions 
+            WHERE phone_id = NEW.phone_id
+            GROUP BY phone_id;
+        IF ((TG_OP = 'INSERT' AND rec.owners_count > 0) OR 
+            (TG_OP = 'UPDATE' AND rec.owners_count > 1))
+        THEN RETURN NULL;
+        ELSE RETURN NEW;
+        END IF;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER subscription_phone_check 
+    BEFORE INSERT OR UPDATE ON subscriptions
+    FOR EACH ROW 
+    EXECUTE PROCEDURE subscription_phone_check_row();
+
+CREATE FUNCTION subscription_default_service_row() trigger AS $$
+BEGIN
+    INSERT INTO service_connection (subscription_id, service_id)
+        VALUES(NEW.subscription_id, 0);
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER subscription_default_service
+    AFTER INSERT ON subscriptions
+    FOR EACH ROW 
+    EXECUTE PROCEDURE subscription_default_service_row();
+\end{lstlisting}
+
+На журнал звонков наложим следующие ограничения: во-первых,
+инициатор и получатель различны; во-вторых, владельцы спаренных или 
+параллельных телефонов не могут звонить одновременно.
+
+\begin{lstlisting}
+CREATE FUNCTION call_log_initiator_check_row() trigger AS $$
+DECLARE
+    rec record;
+BEGIN
+    if (NEW.initiator = NEW.recipient)
+    THEN 
+        RETURN NULL;
+    END IF;
+    -- TODO
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER call_log_initiator_check 
+    BEFORE INSERT OR UPDATE ON call_log
+    FOR EACH ROW 
+    EXECUTE PROCEDURE call_log_initiator_check_row();
 \end{lstlisting}
 
 \end{document}

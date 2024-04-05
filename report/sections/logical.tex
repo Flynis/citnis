@@ -55,7 +55,7 @@
     \SetCell[r=1]{c} Payphone & phone\_id & int & + & PK-FK \\
     \SetCell[r=2]{c} Phone number & phone\_id & int & + & PK-FK \\ 
     & apartment & int & - & $>0$ \\ 
-    \SetCell[r=8]{c} Subsriber (Абонент) & subsriber\_id & serial & + & PK \\ 
+    \SetCell[r=8]{c} Subscriber (Абонент) & subscriber\_id & serial & + & PK \\ 
     & first\_name & text & + & \\
     & last\_name & text & + & \\
     & surname & text & - & \\
@@ -63,14 +63,14 @@
     & age & smallint & - & $[14, 130]$ \\ 
     & benefit & numeric (3, 2) & + & $[0, 1.00], default=0$ \\ 
     & debt & numeric (10, 2) & + & $\geq 0, default=0$ \\ 
-    \SetCell[r=4]{c} Subsription (Абонемент) & subsription\_id & serial & + & PK \\ 
+    \SetCell[r=4]{c} Subscription (Абонемент) & subscription\_id & serial & + & PK \\ 
     & phone\_id & int & + & FK \\
-    & subsriber\_id & int & + & FK \\
+    & subscriber\_id & int & + & FK \\
     & phone\_type & device\_type & + & $default=$ Common \\ 
     \SetCell[r=3]{c} Service (Услуга) & service\_id & serial & + & PK \\ 
     & service\_name & text & + & \\
     & service\_cost & numeric (10, 2) & + & $\geq 0, default=0$ \\
-    \SetCell[r=3]{c} Service Connection & subsription\_id & int & + & PK-FK \\ 
+    \SetCell[r=3]{c} Service Connection & subscription\_id & int & + & PK-FK \\ 
     & service\_id & int & + & PK-FK \\
     & payment\_date & date & + & $default=$ current date \\
     \SetCell[r=4]{c} Call log & initiator & int & + & PK-FK \\ 

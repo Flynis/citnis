@@ -41,7 +41,7 @@ CREATE TABLE cities
 ( city_id           serial     NOT NULL,
   city_name         text       NOT NULL,
   PRIMARY KEY ( city_id ),
-  UNIQUE(city_name)
+  UNIQUE( city_name )
 );
 
 CREATE TABLE districts
@@ -49,7 +49,7 @@ CREATE TABLE districts
   district_name     text       NOT NULL,
   city_id           int        NOT NULL,
   PRIMARY KEY ( district_id ),
-  UNIQUE(district_name, city_id),
+  UNIQUE( district_name, city_id ),
   FOREIGN KEY ( city_id )
     REFERENCES cities ( city_id )
     ON DELETE CASCADE
@@ -60,18 +60,18 @@ CREATE TABLE streets
   street_name       text       NOT NULL,
   district_id       int        NOT NULL,
   PRIMARY KEY ( street_id ),
-  UNIQUE(street_name, district_id),
+  UNIQUE( street_name, district_id ),
   FOREIGN KEY ( district_id )
     REFERENCES districts ( district_id )
     ON DELETE CASCADE
 );
 
-CREATE TABLE address
+CREATE TABLE addresses
 ( address_id        serial     NOT NULL,
   house_no          int        NOT NULL,
   street_id         int        NOT NULL,
   PRIMARY KEY ( address_id ),
-  UNIQUE(house_no, street_id),
+  UNIQUE( house_no, street_id ),
   CONSTRAINT valid_house_no CHECK ( house_no > 0 ),
   FOREIGN KEY ( street_id )
     REFERENCES streets ( street_id )
@@ -84,7 +84,7 @@ CREATE TABLE phones
   address_id        int        NOT NULL,
   phone_no          int        NOT NULL,
   PRIMARY KEY ( phone_id ),
-  UNIQUE(ats_id, phone_no),
+  UNIQUE( ats_id, phone_no ),
   CONSTRAINT valid_phone_no CHECK ( 
     phone_no > 0 AND phone_no < 1000000000 
   ),
@@ -134,12 +134,12 @@ CREATE TABLE subscribers
 
 CREATE TYPE device_type AS ENUM ('Common', 'Parallel', 'Paired');
 
-CREATE TABLE subsriptions
-( subsription_id    serial     NOT NULL,
+CREATE TABLE subscriptions
+( subscription_id    serial     NOT NULL,
   phone_id          int        NOT NULL,
   subscriber_id     int        NOT NULL,
   phone_type device_type DEFAULT 'Common' NOT NULL, 
-  PRIMARY KEY ( subsription_id ),
+  PRIMARY KEY ( subscription_id ),
   UNIQUE ( phone_id, subscriber_id ),
   FOREIGN KEY ( phone_id )
     REFERENCES phone_numbers ( phone_id )
@@ -154,19 +154,20 @@ CREATE TABLE services
   service_name      text       NOT NULL,
   service_cost numeric ( 10 , 2 ) DEFAULT 0 NOT NULL,
   PRIMARY KEY ( service_id ),
+  UNIQUE( service_name ),
   CONSTRAINT valid_cost CHECK ( service_cost > 0 )
 );
 
 CREATE TABLE service_connection
 ( service_id        int     NOT NULL,
-  subsription_id    int     NOT NULL,
+  subscription_id    int     NOT NULL,
   payment_date date DEFAULT CURRENT_DATE NOT NULL,
-  PRIMARY KEY ( service_id, subsription_id ),
+  PRIMARY KEY ( service_id, subscription_id ),
   FOREIGN KEY ( service_id )
     REFERENCES services ( service_id )
     ON DELETE CASCADE,
-  FOREIGN KEY ( subsription_id )
-    REFERENCES subsriptions ( subsription_id )
+  FOREIGN KEY ( subscription_id )
+    REFERENCES subsriptions ( subscription_id )
     ON DELETE CASCADE
 );
 

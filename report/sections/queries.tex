@@ -1,0 +1,37 @@
+\documentclass{report}
+
+\begin{document}
+\chapter{Запросы}
+
+\section{Представления}
+
+Для того чтобы облегчить себе реализацию запросов создадим несколько
+представлений.
+
+1. Представление с текущим городом, как аналог глобальной константе.
+Очевидно что, текущий город уже должен быть в таблице Cities.
+
+\begin{lstlisting}
+CREATE VIEW current_city AS
+SELECT *
+    FROM cities 
+    WHERE city_name = 'Novosibirsk'; 
+\end{lstlisting}
+
+2. Представление с полным адресом, потому что часто будем фильтровать
+по разным частям адреса.
+
+\begin{lstlisting}
+CREATE VIEW full_address AS
+SELECT *
+    FROM addresses 
+    JOIN streets USING(street_id)
+    JOIN districts USING(district_id)
+    JOIN cities USING(city_id);
+\end{lstlisting}
+
+\section{Реализация запросов}
+
+
+
+\end{document}
