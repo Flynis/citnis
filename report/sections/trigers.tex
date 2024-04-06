@@ -22,7 +22,7 @@ CREATE VIEW city_ats_v AS
     FROM ats 
     JOIN city_ats USING(ats_id); 
 
-CREATE FUNCTION city_ats_insert_row() trigger AS $$
+CREATE FUNCTION city_ats_insert_row() RETURNS trigger AS $$
 DECLARE
     id integer := nextval('ats_id_seq');
 BEGIN
@@ -53,7 +53,7 @@ CREATE TRIGGER city_ats_insert
 диапозон номеров.
 
 \begin{lstlisting}
-CREATE FUNCTION prohibit_ats_reduction_row() trigger AS $$
+CREATE FUNCTION prohibit_ats_reduction_row() RETURNS trigger AS $$
 BEGIN
     IF (NEW.first_phone_no > OLD.first_phone_no OR
          NEW.last_phone_no < OLD.last_phone_no)
@@ -67,11 +67,11 @@ CREATE TRIGGER prohibit_ats_reduction
     FOR EACH ROW EXECUTE PROCEDURE prohibit_ats_reduction_row();
 \end{lstlisting}
 
-При вставке/изменении номера телефона мы должны проверить, 
-что он попадает в указанный в АТС диапозон.
+При вставке/изменении телефона мы должны проверить, 
+что номер телефона попадает в указанный в АТС диапозон.
 
 \begin{lstlisting}
-CREATE FUNCTION check_phone_number_row() trigger AS $$
+CREATE FUNCTION check_phone_number_row() RETURNS trigger AS $$
 DECLARE
     rec record;
 BEGIN
@@ -88,11 +88,36 @@ CREATE TRIGGER check_phone_number
     FOR EACH ROW EXECUTE PROCEDURE check_phone_number_row();
 \end{lstlisting}
 
+При изменении типа конечного устройства у номера телефона, необходимо проверить,
+что им владеет только один абонент.
+
+\begin{lstlisting}
+CREATE FUNCTION phone_type_update_row() RETURNS trigger AS $$
+DECLARE
+    rec record;
+BEGIN
+    SELECT COUNT(*) AS owners_count INTO rec 
+        FROM subscriptions
+        WHERE phone_id = NEW.phone_id;
+    IF (rec.owners_count > 1)
+    THEN
+        RETURN NULL;
+    ELSE
+        RETURN NEW;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER phone_type_update 
+    BEFORE UPDATE ON phones
+    FOR EACH ROW 
+    EXECUTE PROCEDURE phone_type_update_row();
+\end{lstlisting}
+
 Чтобы не терять должников, не будем удалять их. То есть запретим
 удаление абонентов с задолжностью.
 
 \begin{lstlisting}
-CREATE FUNCTION prohibit_debtor_remove_row() trigger AS $$
+CREATE FUNCTION prohibit_debtor_remove_row() RETURNS trigger AS $$
 BEGIN
     IF (OLD.debt > 0)
     THEN RETURN NULL;
@@ -112,7 +137,7 @@ CREATE TRIGGER prohibit_debtor_remove
 будем сразу подключать услугу ``Звонок''.
 
 \begin{lstlisting}
-CREATE FUNCTION subscription_phone_check_row() trigger AS $$
+CREATE FUNCTION subscription_phone_check_row() RETURNS trigger AS $$
 DECLARE
     rec record;
 BEGIN
@@ -146,7 +171,7 @@ CREATE TRIGGER subscription_phone_check
     FOR EACH ROW 
     EXECUTE PROCEDURE subscription_phone_check_row();
 
-CREATE FUNCTION subscription_default_service_row() trigger AS $$
+CREATE FUNCTION subscription_default_service_row() RETURNS trigger AS $$
 BEGIN
     INSERT INTO service_connection (subscription_id, service_id)
         VALUES(NEW.subscription_id, 0);
@@ -163,7 +188,7 @@ CREATE TRIGGER subscription_default_service
 параллельных телефонов не могут звонить одновременно.
 
 \begin{lstlisting}
-CREATE FUNCTION call_log_initiator_check_row() trigger AS $$
+CREATE FUNCTION call_log_initiator_check_row() RETURNS trigger AS $$
 DECLARE
     rec record;
 BEGIN

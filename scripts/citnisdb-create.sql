@@ -106,6 +106,7 @@ CREATE TABLE payphones
 
 CREATE TABLE phone_numbers
 ( phone_id          int        NOT NULL,
+  phone_type device_type DEFAULT 'Common' NOT NULL, 
   apartment         int,
   PRIMARY KEY ( phone_id ),
   CONSTRAINT valid_apartment CHECK ( apartment > 0 ),
@@ -119,7 +120,7 @@ CREATE TABLE subscribers
   first_name        text       NOT NULL,
   last_name         text       NOT NULL,
   surname           text,
-  sex               char ( 1 ),
+  gender            char ( 1 ),
   age               smallint, 
   benefit numeric ( 3, 2 ) DEFAULT 0 NOT NULL,
   debt    numeric ( 10, 2 ) DEFAULT 0 NOT NULL,
@@ -138,9 +139,10 @@ CREATE TABLE subscriptions
 ( subscription_id    serial     NOT NULL,
   phone_id          int        NOT NULL,
   subscriber_id     int        NOT NULL,
-  phone_type device_type DEFAULT 'Common' NOT NULL, 
+  apartment         int,
   PRIMARY KEY ( subscription_id ),
   UNIQUE ( phone_id, subscriber_id ),
+  CONSTRAINT valid_apartment CHECK ( apartment > 0 ),
   FOREIGN KEY ( phone_id )
     REFERENCES phone_numbers ( phone_id )
     ON DELETE CASCADE,

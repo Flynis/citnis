@@ -48,25 +48,25 @@
     \SetCell[r=1]{c} City ATS & ats\_id & int & + & PK-FK \\
     \SetCell[r=1]{c} Department ATS & ats\_id & int & + & PK-FK \\
     \SetCell[r=1]{c} Institution ATS & ats\_id & int & + & PK-FK \\ 
-    \SetCell[r=4]{c} Phone & phone\_id & int & + & PK \\
+    \SetCell[r=5]{c} Phone & phone\_id & int & + & PK \\
     & ats\_id & int & + & FK \\ 
     & address\_id & int & + & FK \\ 
     & phone\_no & int & + & $(0, 1'000'000'000)$ \\
     \SetCell[r=1]{c} Payphone & phone\_id & int & + & PK-FK \\
     \SetCell[r=2]{c} Phone number & phone\_id & int & + & PK-FK \\ 
-    & apartment & int & - & $>0$ \\ 
+    & phone\_type & device\_type & + & $default=$ Common \\ 
     \SetCell[r=8]{c} Subscriber (Абонент) & subscriber\_id & serial & + & PK \\ 
     & first\_name & text & + & \\
     & last\_name & text & + & \\
     & surname & text & - & \\
-    & sex & char (1) & - & `m' или `f' \\
+    & gender & char (1) & - & `m' или `f' \\
     & age & smallint & - & $[14, 130]$ \\ 
     & benefit & numeric (3, 2) & + & $[0, 1.00], default=0$ \\ 
     & debt & numeric (10, 2) & + & $\geq 0, default=0$ \\ 
     \SetCell[r=4]{c} Subscription (Абонемент) & subscription\_id & serial & + & PK \\ 
     & phone\_id & int & + & FK \\
     & subscriber\_id & int & + & FK \\
-    & phone\_type & device\_type & + & $default=$ Common \\ 
+    & apartment & int & - & $>0$ \\ 
     \SetCell[r=3]{c} Service (Услуга) & service\_id & serial & + & PK \\ 
     & service\_name & text & + & \\
     & service\_cost & numeric (10, 2) & + & $\geq 0, default=0$ \\

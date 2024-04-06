@@ -12,7 +12,7 @@ CREATE VIEW city_ats_v AS
     FROM ats 
     JOIN city_ats USING(ats_id); 
 
-CREATE FUNCTION city_ats_insert_row() trigger AS $$
+CREATE FUNCTION city_ats_insert_row() RETURNS trigger AS $$
 DECLARE
     id integer := nextval('ats_id_seq');
 BEGIN
@@ -28,7 +28,7 @@ CREATE TRIGGER city_ats_insert
     FOR EACH ROW 
     EXECUTE PROCEDURE city_ats_insert_row();
 
-CREATE FUNCTION city_ats_update_row() trigger AS $$
+CREATE FUNCTION city_ats_update_row() RETURNS trigger AS $$
 BEGIN
     IF (NEW.ats_id != OLD.ats_id)
     THEN RETURN NULL;
@@ -45,7 +45,7 @@ CREATE TRIGGER city_ats_update
     FOR EACH ROW 
     EXECUTE PROCEDURE city_ats_update_row();
 
-CREATE FUNCTION city_ats_delete_row() trigger AS $$
+CREATE FUNCTION city_ats_delete_row() RETURNS trigger AS $$
 BEGIN
     DELETE FROM city_ats
         WHERE ats_id = OLD.ats_id;
@@ -67,7 +67,7 @@ CREATE VIEW department_ats_v AS
     FROM ats 
     JOIN department_ats USING(ats_id); 
 
-CREATE FUNCTION department_ats_insert_row() trigger AS $$
+CREATE FUNCTION department_ats_insert_row() RETURNS trigger AS $$
 DECLARE
     id integer := nextval('ats_id_seq');
 BEGIN
@@ -83,7 +83,7 @@ CREATE TRIGGER department_ats_insert
     FOR EACH ROW 
     EXECUTE PROCEDURE department_ats_insert_row();
 
-CREATE FUNCTION department_ats_update_row() trigger AS $$
+CREATE FUNCTION department_ats_update_row() RETURNS trigger AS $$
 BEGIN
     IF (NEW.ats_id != OLD.ats_id)
     THEN RETURN NULL;
@@ -100,7 +100,7 @@ CREATE TRIGGER department_ats_update
     FOR EACH ROW 
     EXECUTE PROCEDURE department_ats_update_row();
 
-CREATE FUNCTION department_ats_delete_row() trigger AS $$
+CREATE FUNCTION department_ats_delete_row() RETURNS trigger AS $$
 BEGIN
     DELETE FROM department_ats
         WHERE ats_id = OLD.ats_id;
@@ -122,7 +122,7 @@ CREATE VIEW institution_ats_v AS
     FROM ats 
     JOIN institution_ats USING(ats_id); 
 
-CREATE FUNCTION institution_ats_insert_row() trigger AS $$
+CREATE FUNCTION institution_ats_insert_row() RETURNS trigger AS $$
 DECLARE
     id integer := nextval('ats_id_seq');
 BEGIN
@@ -138,7 +138,7 @@ CREATE TRIGGER institution_ats_insert
     FOR EACH ROW 
     EXECUTE PROCEDURE institution_ats_insert_row();
 
-CREATE FUNCTION institution_ats_update_row() trigger AS $$
+CREATE FUNCTION institution_ats_update_row() RETURNS trigger AS $$
 BEGIN
     IF (NEW.ats_id != OLD.ats_id)
     THEN RETURN NULL;
@@ -155,7 +155,7 @@ CREATE TRIGGER institution_ats_update
     FOR EACH ROW 
     EXECUTE PROCEDURE institution_ats_update_row();
 
-CREATE FUNCTION institution_ats_delete_row() trigger AS $$
+CREATE FUNCTION institution_ats_delete_row() RETURNS trigger AS $$
 BEGIN
     DELETE FROM institution_ats
         WHERE ats_id = OLD.ats_id;
@@ -184,7 +184,7 @@ CREATE VIEW payphones_v AS
     FROM phones
     JOIN payphones USING(phone_id); 
 
-CREATE FUNCTION payphones_insert_row() trigger AS $$
+CREATE FUNCTION payphones_insert_row() RETURNS trigger AS $$
 DECLARE
     id integer := nextval('phone_id_seq');
 BEGIN
@@ -200,7 +200,7 @@ CREATE TRIGGER payphones_insert
     FOR EACH ROW 
     EXECUTE PROCEDURE payphones_insert_row();
 
-CREATE FUNCTION payphones_update_row() trigger AS $$
+CREATE FUNCTION payphones_update_row() RETURNS trigger AS $$
 BEGIN
     IF (NEW.phone_id != OLD.phone_id)
     THEN RETURN NULL;
@@ -217,7 +217,7 @@ CREATE TRIGGER payphones_update
     FOR EACH ROW 
     EXECUTE PROCEDURE payphones_update_row();
 
-CREATE FUNCTION payphones_delete_row() trigger AS $$
+CREATE FUNCTION payphones_delete_row() RETURNS trigger AS $$
 BEGIN
     DELETE FROM payphones
         WHERE phone_id = OLD.phone_id;
@@ -239,14 +239,14 @@ CREATE VIEW phone_numbers_v AS
     FROM phones
     JOIN phone_numbers USING(phone_id); 
 
-CREATE FUNCTION phone_numbers_insert_row() trigger AS $$
+CREATE FUNCTION phone_numbers_insert_row() RETURNS trigger AS $$
 DECLARE
     id integer := nextval('phone_id_seq');
 BEGIN
     INSERT INTO phones (phone_id, ats_id, address_id, phone_no)
         VALUES(id, NEW.ats_id, NEW.address_id, NEW.phone_no);
-    INSERT INTO phone_numbers (phone_id)
-        VALUES(id);
+    INSERT INTO phone_numbers (phone_id, phone_type)
+        VALUES(id, NEW.phone_type);
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -255,7 +255,7 @@ CREATE TRIGGER phone_numbers_insert
     FOR EACH ROW 
     EXECUTE PROCEDURE phone_numbers_insert_row();
 
-CREATE FUNCTION phone_numbers_update_row() trigger AS $$
+CREATE FUNCTION phone_numbers_update_row() RETURNS trigger AS $$
 BEGIN
     IF (NEW.phone_id != OLD.phone_id)
     THEN RETURN NULL;
@@ -264,6 +264,8 @@ BEGIN
         SET ats_id = NEW.ats_id,
             address_id = NEW.address_id,
             phone_no = NEW.phone_no;
+    UPDATE phone_numbers
+        SET phone_type = NEW.phone_type;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -272,7 +274,7 @@ CREATE TRIGGER phone_numbers_update
     FOR EACH ROW 
     EXECUTE PROCEDURE phone_numbers_update_row();
 
-CREATE FUNCTION phone_numbers_delete_row() trigger AS $$
+CREATE FUNCTION phone_numbers_delete_row() RETURNS trigger AS $$
 BEGIN
     DELETE FROM phone_numbers
         WHERE phone_id = OLD.phone_id;
@@ -291,7 +293,7 @@ CREATE TRIGGER phone_numbers_delete
  * Other triggers
 */
 
-CREATE FUNCTION prohibit_ats_reduction_row() trigger AS $$
+CREATE FUNCTION prohibit_ats_reduction_row() RETURNS trigger AS $$
 BEGIN
     IF (NEW.first_phone_no > OLD.first_phone_no OR
          NEW.last_phone_no < OLD.last_phone_no)
@@ -307,7 +309,7 @@ CREATE TRIGGER prohibit_ats_reduction
     FOR EACH ROW 
     EXECUTE PROCEDURE prohibit_ats_reduction_row();
 
-CREATE FUNCTION check_phone_number_row() trigger AS $$
+CREATE FUNCTION check_phone_number_row() RETURNS trigger AS $$
 DECLARE
     rec record;
 BEGIN
@@ -328,7 +330,27 @@ CREATE TRIGGER check_phone_number
     FOR EACH ROW 
     EXECUTE PROCEDURE check_phone_number_row();
 
-CREATE FUNCTION prohibit_debtor_remove_row() trigger AS $$
+CREATE FUNCTION phone_type_update_row() RETURNS trigger AS $$
+DECLARE
+    rec record;
+BEGIN
+    SELECT COUNT(*) AS owners_count INTO rec 
+        FROM subscriptions
+        WHERE phone_id = NEW.phone_id;
+    IF (rec.owners_count > 1)
+    THEN
+        RETURN NULL;
+    ELSE
+        RETURN NEW;
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+CREATE TRIGGER phone_type_update 
+    BEFORE UPDATE ON phones
+    FOR EACH ROW 
+    EXECUTE PROCEDURE phone_type_update_row();
+
+CREATE FUNCTION prohibit_debtor_remove_row() RETURNS trigger AS $$
 BEGIN
     IF (OLD.debt > 0)
     THEN
@@ -343,7 +365,7 @@ CREATE TRIGGER prohibit_debtor_remove
     FOR EACH ROW 
     EXECUTE PROCEDURE prohibit_debtor_remove_row();
 
-CREATE FUNCTION subscription_phone_check_row() trigger AS $$
+CREATE FUNCTION subscription_phone_check_row() RETURNS trigger AS $$
 DECLARE
     rec record;
 BEGIN
@@ -385,7 +407,7 @@ INSERT INTO services (service_name, service_cost)
         VALUES ('Call', 200),
                ('Intercity call', 400);
 
-CREATE FUNCTION subscription_default_service_row() trigger AS $$
+CREATE FUNCTION subscription_default_service_row() RETURNS trigger AS $$
 BEGIN
     INSERT INTO service_connection (subscription_id, service_id)
         VALUES(NEW.subscription_id, 0);
@@ -396,15 +418,15 @@ CREATE TRIGGER subscription_default_service
     FOR EACH ROW 
     EXECUTE PROCEDURE subscription_default_service_row();
 
-CREATE FUNCTION call_log_initiator_check_row() trigger AS $$
+CREATE FUNCTION call_log_initiator_check_row() RETURNS trigger AS $$
 DECLARE
     rec record;
 BEGIN
-    if (NEW.initiator = NEW.recipient)
+    IF (NEW.initiator = NEW.recipient)
     THEN 
         RETURN NULL;
     END IF;
-    -- TODO
+    IF (NEW)
 END;
 $$ LANGUAGE plpgsql;
 CREATE TRIGGER call_log_initiator_check 
