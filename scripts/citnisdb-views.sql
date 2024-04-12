@@ -10,3 +10,9 @@ CREATE VIEW full_address AS
     JOIN districts USING(district_id)
     JOIN cities USING(city_id); 
     
+CREATE VIEW ats_subscribers AS
+SELECT *
+    FROM ats
+    JOIN phone_numbers USING(ats_id)
+    JOIN subscriptions USING(phone_id)
+    JOIN subscribers USING(subscriber_id)
