@@ -42,10 +42,11 @@ CREATE TRIGGER city_ats_insert
     FOR EACH ROW EXECUTE PROCEDURE city_ats_insert_row();
 \end{lstlisting}
 
-Для UPDATE и DELETE аналогично, ровно как и для иерархии с супертипом
-Телефон.
+Аналогичные триггеры заведем для операций UPDATE и DELETE. 
+Повторим это для Department ATS и Institution ATS, 
+Payphone и Phone number.
 
-\section{Тригеры}
+\section{Триггеры}
 
 У АТС имеется диапозон доступных номеров телефонов. При расширении этого 
 диапозона проблем нет, а вот при его уменьшении существующий номер 
@@ -68,7 +69,7 @@ CREATE TRIGGER prohibit_ats_reduction
 \end{lstlisting}
 
 При вставке/изменении телефона мы должны проверить, 
-что номер телефона попадает в указанный в АТС диапозон.
+что номер телефона попадает в допустимый у АТС диапозон.
 
 \begin{lstlisting}
 CREATE FUNCTION check_phone_number_row() RETURNS trigger AS $$
@@ -89,7 +90,7 @@ CREATE TRIGGER check_phone_number
 \end{lstlisting}
 
 При изменении типа конечного устройства у номера телефона, необходимо проверить,
-что им владеет только один абонент.
+что им владеет не больше одного абонента.
 
 \begin{lstlisting}
 CREATE FUNCTION phone_type_update_row() RETURNS trigger AS $$
@@ -147,17 +148,15 @@ BEGIN
             FROM subscriptions 
             JOIN phones USING(phone_id)
             WHERE (phone_id = NEW.phone_id AND 
-                    address_id != NEW.address_id)
-            GROUP BY phone_id;
-        IF (rec.owners_count > 0)
+                    address_id != NEW.address_id);
+        IF (rec.other_address_count > 0)
         THEN RETURN NULL;
         ELSE RETURN NEW;
         END IF;
     ELSE
         SELECT COUNT(*) AS owners_count INTO rec 
             FROM subscriptions 
-            WHERE phone_id = NEW.phone_id
-            GROUP BY phone_id;
+            WHERE phone_id = NEW.phone_id;
         IF ((TG_OP = 'INSERT' AND rec.owners_count > 0) OR 
             (TG_OP = 'UPDATE' AND rec.owners_count > 1))
         THEN RETURN NULL;
@@ -183,26 +182,21 @@ CREATE TRIGGER subscription_default_service
     EXECUTE PROCEDURE subscription_default_service_row();
 \end{lstlisting}
 
-На журнал звонков наложим следующие ограничения: во-первых,
-инициатор и получатель различны; во-вторых, владельцы спаренных или 
-параллельных телефонов не могут звонить одновременно.
+В журнале звонков инициатор и получатель различны.
 
 \begin{lstlisting}
-CREATE FUNCTION call_log_initiator_check_row() RETURNS trigger AS $$
-DECLARE
-    rec record;
+CREATE FUNCTION call_log_check_row() RETURNS trigger AS $$
 BEGIN
     if (NEW.initiator = NEW.recipient)
-    THEN 
-        RETURN NULL;
+    THEN RETURN NULL;
+    ELSE RETURN NEW;
     END IF;
-    -- TODO
 END;
 $$ LANGUAGE plpgsql;
-CREATE TRIGGER call_log_initiator_check 
+CREATE TRIGGER call_log_check 
     BEFORE INSERT OR UPDATE ON call_log
     FOR EACH ROW 
-    EXECUTE PROCEDURE call_log_initiator_check_row();
+    EXECUTE PROCEDURE call_log_check_row();
 \end{lstlisting}
 
 \end{document}

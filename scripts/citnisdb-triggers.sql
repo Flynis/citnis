@@ -16,8 +16,8 @@ CREATE FUNCTION city_ats_insert_row() RETURNS trigger AS $$
 DECLARE
     id integer := nextval('ats_id_seq');
 BEGIN
-    INSERT INTO ats (ats_id, ats_owner, first_phone_no, last_phone_no)
-        VALUES(id, NEW.ats_owner, NEW.first_phone_no, NEW.last_phone_no);
+    INSERT INTO ats (ats_id, ats_name, first_phone_no, last_phone_no)
+        VALUES(id, NEW.ats_name, NEW.first_phone_no, NEW.last_phone_no);
     INSERT INTO city_ats (ats_id)
         VALUES(id);
     RETURN NEW;
@@ -34,7 +34,7 @@ BEGIN
     THEN RETURN NULL;
     END IF;
     UPDATE ats
-        SET ats_owner = NEW.ats_owner,
+        SET ats_name = NEW.ats_name,
             first_phone_no = NEW.first_phone_no,
             last_phone_no = NEW.last_phone_no;
     RETURN NEW;
@@ -71,8 +71,8 @@ CREATE FUNCTION department_ats_insert_row() RETURNS trigger AS $$
 DECLARE
     id integer := nextval('ats_id_seq');
 BEGIN
-    INSERT INTO ats (ats_id, ats_owner, first_phone_no, last_phone_no)
-        VALUES(id, NEW.ats_owner, NEW.first_phone_no, NEW.last_phone_no);
+    INSERT INTO ats (ats_id, ats_name, first_phone_no, last_phone_no)
+        VALUES(id, NEW.ats_name, NEW.first_phone_no, NEW.last_phone_no);
     INSERT INTO department_ats (ats_id)
         VALUES(id);
     RETURN NEW;
@@ -89,7 +89,7 @@ BEGIN
     THEN RETURN NULL;
     END IF;
     UPDATE ats
-        SET ats_owner = NEW.ats_owner,
+        SET ats_name = NEW.ats_name,
             first_phone_no = NEW.first_phone_no,
             last_phone_no = NEW.last_phone_no;
     RETURN NEW;
@@ -126,8 +126,8 @@ CREATE FUNCTION institution_ats_insert_row() RETURNS trigger AS $$
 DECLARE
     id integer := nextval('ats_id_seq');
 BEGIN
-    INSERT INTO ats (ats_id, ats_owner, first_phone_no, last_phone_no)
-        VALUES(id, NEW.ats_owner, NEW.first_phone_no, NEW.last_phone_no);
+    INSERT INTO ats (ats_id, ats_name, first_phone_no, last_phone_no)
+        VALUES(id, NEW.ats_name, NEW.first_phone_no, NEW.last_phone_no);
     INSERT INTO institution_ats (ats_id)
         VALUES(id);
     RETURN NEW;
@@ -144,7 +144,7 @@ BEGIN
     THEN RETURN NULL;
     END IF;
     UPDATE ats
-        SET ats_owner = NEW.ats_owner,
+        SET ats_name = NEW.ats_name,
             first_phone_no = NEW.first_phone_no,
             last_phone_no = NEW.last_phone_no;
     RETURN NEW;
@@ -375,9 +375,8 @@ BEGIN
             FROM subscriptions 
             JOIN phones USING(phone_id)
             WHERE (phone_id = NEW.phone_id AND 
-                    address_id != NEW.address_id)
-            GROUP BY phone_id;
-        IF (rec.owners_count > 0)
+                    address_id != NEW.address_id);
+        IF (rec.other_address_count > 0)
         THEN 
             RETURN NULL;
         ELSE 
@@ -386,8 +385,7 @@ BEGIN
     ELSE
         SELECT COUNT(*) AS owners_count INTO rec 
             FROM subscriptions 
-            WHERE phone_id = NEW.phone_id
-            GROUP BY phone_id;
+            WHERE phone_id = NEW.phone_id;
         IF ((TG_OP = 'INSERT' AND rec.owners_count > 0) OR 
             (TG_OP = 'UPDATE' AND rec.owners_count > 1))
         THEN 
@@ -418,19 +416,18 @@ CREATE TRIGGER subscription_default_service
     FOR EACH ROW 
     EXECUTE PROCEDURE subscription_default_service_row();
 
-CREATE FUNCTION call_log_initiator_check_row() RETURNS trigger AS $$
-DECLARE
-    rec record;
+CREATE FUNCTION call_log_check_row() RETURNS trigger AS $$
 BEGIN
-    IF (NEW.initiator = NEW.recipient)
+    if (NEW.initiator = NEW.recipient)
     THEN 
         RETURN NULL;
+    ELSE 
+        RETURN NEW;
     END IF;
-    IF (NEW)
 END;
 $$ LANGUAGE plpgsql;
-CREATE TRIGGER call_log_initiator_check 
+CREATE TRIGGER call_log_check 
     BEFORE INSERT OR UPDATE ON call_log
     FOR EACH ROW 
-    EXECUTE PROCEDURE call_log_initiator_check_row();
+    EXECUTE PROCEDURE call_log_check_row();
 

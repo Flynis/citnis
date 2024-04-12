@@ -1,9 +1,10 @@
 CREATE TABLE ats
 ( ats_id            int        NOT NULL,
-  ats_owner         text,
+  ats_name          text       NOT NULL,
   first_phone_no    int        NOT NULL,
   last_phone_no     int        NOT NULL,
   PRIMARY KEY ( ats_id ),
+  UNIQUE( ats_name ),
   CONSTRAINT valid_first_phone CHECK ( 
     first_phone_no > 0 AND first_phone_no < 1000000000
   ),
@@ -106,10 +107,11 @@ CREATE TABLE payphones
 
 CREATE TABLE phone_numbers
 ( phone_id          int        NOT NULL,
-  phone_type device_type DEFAULT 'Common' NOT NULL, 
+  phone_type text DEFAULT 'Common' NOT NULL, 
   apartment         int,
   PRIMARY KEY ( phone_id ),
   CONSTRAINT valid_apartment CHECK ( apartment > 0 ),
+  CONSTRAINT valid_phone_type CHECK ( phone_type IN ('Common', 'Parallel', 'Paired')),
   FOREIGN KEY ( phone_id )
     REFERENCES phones ( phone_id )
     ON DELETE CASCADE
@@ -125,15 +127,13 @@ CREATE TABLE subscribers
   benefit numeric ( 3, 2 ) DEFAULT 0 NOT NULL,
   debt    numeric ( 10, 2 ) DEFAULT 0 NOT NULL,
   PRIMARY KEY ( subscriber_id ),
-  CONSTRAINT valid_sex CHECK ( sex = 'm' OR sex = 'f' ),
+  CONSTRAINT valid_gender CHECK ( gender IN ( 'm', 'f' )),
   CONSTRAINT valid_age CHECK ( age >= 14 AND age <= 130 ),
   CONSTRAINT valid_benefit CHECK ( 
     benefit >= 0 AND benefit <= 1 
   ),
   CONSTRAINT valid_debt CHECK ( debt > 0 )
 );
-
-CREATE TYPE device_type AS ENUM ('Common', 'Parallel', 'Paired');
 
 CREATE TABLE subscriptions
 ( subscription_id    serial     NOT NULL,
