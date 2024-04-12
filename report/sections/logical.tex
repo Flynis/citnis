@@ -30,36 +30,34 @@
 Все ссылочные (целевые) отношения имеют сурогатный ключ, который
 нам незачем изменять. Поэтому для обеспечения ссылочной целостности
 при удалении будем использовать политику каскадного удаления, 
-а при обновлении - ничего не делать. Сущности Абонент, Номер телефона,
+а при обновлении - ничего не делать. Сущности АТС, Абонент, Номер телефона,
 Город, Район, Улица, Адрес имеют второй потенциальный ключ,
 наложим ограничение UNIQUE на него.
 
-Кроме того, нам понадобится тип конечного устройства (телефона) в виде 
-перечисления device\_type = (``Common'', ``Parallel'', ``Paired''). 
 \newpage
 \begin{longtblr}[caption={Реляционная схема базы данных}, theme = TC,]{
         colspec={|X[3]|X[3]|X[3]|X[1]|X[4]|}, row{1} = {c}, hlines,
     }
     Отношение & Атрибут & Тип & Not null & Ограничения \\
     \SetCell[r=4]{c} ATS & ats\_id & int & + & PK \\ 
-    & ats\_owner & text & - & \\
+    & ats\_name & text & + & \\
     & first\_phone\_no & int & + & $(0, 1'000'000'000)$ \\
     & last\_phone\_no & int & + & $(1, 1'000'000'000)$, $last>first$ \\ 
     \SetCell[r=1]{c} City ATS & ats\_id & int & + & PK-FK \\
     \SetCell[r=1]{c} Department ATS & ats\_id & int & + & PK-FK \\
     \SetCell[r=1]{c} Institution ATS & ats\_id & int & + & PK-FK \\ 
-    \SetCell[r=5]{c} Phone & phone\_id & int & + & PK \\
+    \SetCell[r=4]{c} Phone & phone\_id & int & + & PK \\
     & ats\_id & int & + & FK \\ 
     & address\_id & int & + & FK \\ 
     & phone\_no & int & + & $(0, 1'000'000'000)$ \\
     \SetCell[r=1]{c} Payphone & phone\_id & int & + & PK-FK \\
     \SetCell[r=2]{c} Phone number & phone\_id & int & + & PK-FK \\ 
-    & phone\_type & device\_type & + & $default=$ Common \\ 
+    & phone\_type & text & + & IN (`Common', `Parallel', `Paired'), $default=$ `Common' \\ 
     \SetCell[r=8]{c} Subscriber (Абонент) & subscriber\_id & serial & + & PK \\ 
     & first\_name & text & + & \\
     & last\_name & text & + & \\
     & surname & text & - & \\
-    & gender & char (1) & - & `m' или `f' \\
+    & gender & char (1) & - & IN (`m', `f') \\
     & age & smallint & - & $[14, 130]$ \\ 
     & benefit & numeric (3, 2) & + & $[0, 1.00], default=0$ \\ 
     & debt & numeric (10, 2) & + & $\geq 0, default=0$ \\ 
