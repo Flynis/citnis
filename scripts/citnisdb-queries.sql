@@ -22,6 +22,16 @@ SELECT phone_no
 /*
  * 3
 */
+SELECT first_name, last_name, surname, gender, age
+    FROM ats_subscribers 
+    JOIN full_address USING(address_id)
+    JOIN service_connection USING(subscription_id)
+    JOIN services USING(service_id)
+    WHERE district_name = $(district_name) AND 
+        ($(all_ats_query) OR ats_name = $(desired_ats_name)) AND 
+        debt >= $(debt) AND 
+        service_name = "Intercity call" AND
+        EXTRACT(DAY FROM (CURRENT_TIMESTAMP - payment_date)) > 7;
 
 /*
  * 4
@@ -68,7 +78,22 @@ SELECT phone_no
 /*
  * 6
 */
-
+WITH ats_subscribers_count AS (
+    SELECT ats_id, COUNT(subscriber_id) AS subscribers_count  
+        FROM ats_subscribers
+        GROUP BY ats_name
+    ),
+    ats_beneficiaries_count AS (
+    SELECT ats_id, COUNT(subscriber_id) AS beneficiaries_count  
+        FROM ats_subscribers
+        WHERE benefit >= 0.5
+        GROUP BY ats_name
+    )
+SELECT ats_name, (beneficiaries_count / subscribers_count * 100) AS beneficiaries_percent
+    FROM ats
+    JOIN ats_subscribers_count USING(ats_id)
+    JOIN ats_beneficiaries_count USING(ats_id)
+    WHERE ats_name = $(desired_ats_name);
 
 /*
  * 7
@@ -84,7 +109,14 @@ SELECT first_name, last_name, surname, gender, age
 /*
  * 8
 */
-
+SELECT phone_no
+    FROM phone_numbers_v
+    JOIN full_address USING(address_id)
+    LEFT JOIN subscriptions USING(phone_id)
+    LEFT JOIN service_connection USING(subscription_id)
+    WHERE street_name = $(street_name) AND
+        house_no = $(house_no) AND
+        service_name = 'Intercity call';
 
 /*
  * 9
@@ -112,12 +144,25 @@ SELECT first_name, last_name, surname, gender, age
     JOIN subscriptions USING(subscriber_id)
     JOIN phone_numbers_v USING(phone_id)
     WHERE phone_no = $(desired_phone_no);
-    
 
 /*
  * 11
 */
+WITH free_phones_in_house AS (
+    SELECT address_id, COUNT(phone_id) AS free_phones_count
+        FROM phone_numbers_v
+        LEFT JOIN subscriptions USING(phone_id)
+        JOIN full_address USING(address_id)
+        WHERE subscriptions.phone_id IS NULL
+        GROUP BY address_id
+    )
+SELECT phone_no, house_no, street_name, district_name
+    FROM phone_numbers_v
+    JOIN full_address USING(address_id)
+    JOIN free_phones_in_house USING(address_id)
+    WHERE free_phones_count > 0;
 
 /*
  * 12
 */
+

@@ -160,6 +160,10 @@ CREATE TABLE services
   CONSTRAINT valid_cost CHECK ( service_cost > 0 )
 );
 
+INSERT INTO services (service_name, service_cost)
+        VALUES ('Call', 200),
+               ('Intercity call', 400);
+
 CREATE TABLE service_connection
 ( service_id        int     NOT NULL,
   subscription_id    int     NOT NULL,

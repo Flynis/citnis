@@ -401,10 +401,6 @@ CREATE TRIGGER subscription_phone_check
     FOR EACH ROW 
     EXECUTE PROCEDURE subscription_phone_check_row();
 
-INSERT INTO services (service_name, service_cost)
-        VALUES ('Call', 200),
-               ('Intercity call', 400);
-
 CREATE FUNCTION subscription_default_service_row() RETURNS trigger AS $$
 BEGIN
     INSERT INTO service_connection (subscription_id, service_id)
