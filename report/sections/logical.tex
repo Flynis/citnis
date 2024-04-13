@@ -34,6 +34,8 @@
 Город, Район, Улица, Адрес имеют второй потенциальный ключ,
 наложим ограничение UNIQUE на него.
 
+Полный скрипт создания данной схемы находится в файле \textbf{citnisdb-create.sql}.
+
 \newpage
 \begin{longtblr}[caption={Реляционная схема базы данных}, theme = TC,]{
         colspec={|X[3]|X[3]|X[3]|X[1]|X[4]|}, row{1} = {c}, hlines,
@@ -71,9 +73,10 @@
     \SetCell[r=3]{c} Service Connection & subscription\_id & int & + & PK-FK \\ 
     & service\_id & int & + & PK-FK \\
     & payment\_date & date & + & $default=$ current date \\
-    \SetCell[r=4]{c} Call log & initiator & int & + & PK-FK \\ 
+    \SetCell[r=5]{c} Call log & initiator & int & + & PK-FK \\ 
     & call\_time & timestamptz & + & PK \\
-    & recipient & int & + & FK \\
+    & recipient_no & bigint & + & $(1'000'000'00'00, 100'000'000'00'00)$ \\
+    & recipient_ats_address & int & + & FK \\
     & duration & int & + & $>0, default=1$ \\
     \SetCell[r=2]{c} City & city\_id & serial & + & PK \\ 
     & city\_name & text & + & \\ 

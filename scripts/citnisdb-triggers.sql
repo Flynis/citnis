@@ -404,26 +404,10 @@ CREATE TRIGGER subscription_phone_check
 CREATE FUNCTION subscription_default_service_row() RETURNS trigger AS $$
 BEGIN
     INSERT INTO service_connection (subscription_id, service_id)
-        VALUES(NEW.subscription_id, 0);
+        VALUES(NEW.subscription_id, 1);
 END;
 $$ LANGUAGE plpgsql;
 CREATE TRIGGER subscription_default_service
     AFTER INSERT ON subscriptions
     FOR EACH ROW 
     EXECUTE PROCEDURE subscription_default_service_row();
-
-CREATE FUNCTION call_log_check_row() RETURNS trigger AS $$
-BEGIN
-    if (NEW.initiator = NEW.recipient)
-    THEN 
-        RETURN NULL;
-    ELSE 
-        RETURN NEW;
-    END IF;
-END;
-$$ LANGUAGE plpgsql;
-CREATE TRIGGER call_log_check 
-    BEFORE INSERT OR UPDATE ON call_log
-    FOR EACH ROW 
-    EXECUTE PROCEDURE call_log_check_row();
-

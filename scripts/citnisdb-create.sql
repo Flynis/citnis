@@ -108,9 +108,7 @@ CREATE TABLE payphones
 CREATE TABLE phone_numbers
 ( phone_id          int        NOT NULL,
   phone_type text DEFAULT 'Common' NOT NULL, 
-  apartment         int,
   PRIMARY KEY ( phone_id ),
-  CONSTRAINT valid_apartment CHECK ( apartment > 0 ),
   CONSTRAINT valid_phone_type CHECK ( phone_type IN ('Common', 'Parallel', 'Paired')),
   FOREIGN KEY ( phone_id )
     REFERENCES phones ( phone_id )
@@ -132,7 +130,7 @@ CREATE TABLE subscribers
   CONSTRAINT valid_benefit CHECK ( 
     benefit >= 0 AND benefit <= 1 
   ),
-  CONSTRAINT valid_debt CHECK ( debt > 0 )
+  CONSTRAINT valid_debt CHECK ( debt >= 0 )
 );
 
 CREATE TABLE subscriptions
@@ -161,8 +159,8 @@ CREATE TABLE services
 );
 
 INSERT INTO services (service_name, service_cost)
-        VALUES ('Call', 200),
-               ('Intercity call', 400);
+        VALUES ('Звонок', 200),
+               ('Междугородний звонок', 400);
 
 CREATE TABLE service_connection
 ( service_id        int     NOT NULL,
@@ -173,20 +171,24 @@ CREATE TABLE service_connection
     REFERENCES services ( service_id )
     ON DELETE CASCADE,
   FOREIGN KEY ( subscription_id )
-    REFERENCES subsriptions ( subscription_id )
+    REFERENCES subscriptions ( subscription_id )
     ON DELETE CASCADE
 );
 
 CREATE TABLE call_log
 ( initiator         int     NOT NULL,
   call_time timestamptz     NOT NULL,
-  recipient         int     NOT NULL,
+  recipient_no      bigint  NOT NULL,
+  recipient_ats_address int NOT NULL,
   duration int DEFAULT 1 NOT NULL,
   PRIMARY KEY ( initiator, call_time ),
+  CONSTRAINT valid_recipient_no CHECK ( 
+    recipient_no > 10000000000 AND recipient_no < 1000000000000
+  ),
   FOREIGN KEY ( initiator )
     REFERENCES phone_numbers ( phone_id )
     ON DELETE CASCADE,
-  FOREIGN KEY ( recipient )
-    REFERENCES phone_numbers ( phone_id )
+  FOREIGN KEY ( recipient_ats_address )
+    REFERENCES addresses ( address_id )
     ON DELETE CASCADE
 );

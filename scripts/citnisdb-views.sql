@@ -13,6 +13,6 @@ CREATE VIEW full_address AS
 CREATE VIEW ats_subscribers AS
 SELECT *
     FROM ats
-    JOIN phone_numbers USING(ats_id)
+    JOIN phone_numbers_v USING(ats_id)
     JOIN subscriptions USING(phone_id)
-    JOIN subscribers USING(subscriber_id)
+    JOIN subscribers USING(subscriber_id);

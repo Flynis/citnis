@@ -6,7 +6,8 @@
 \section{Представления}
 
 Для того чтобы облегчить себе реализацию запросов создадим несколько
-представлений.
+представлений. Описанные здесь представления находится в файле 
+\textbf{citnisdb-views.sql}.
 
 1. Представление с текущим городом, как аналог глобальной константе.
 Очевидно что, текущий город уже должен быть в таблице Cities.
@@ -35,13 +36,14 @@ SELECT *
 CREATE VIEW ats_subscribers AS
 SELECT *
     FROM ats
-    JOIN phone_numbers USING(ats_id)
+    JOIN phone_numbers_v USING(ats_id)
     JOIN subscriptions USING(phone_id)
-    JOIN subscribers USING(subscriber_id)
+    JOIN subscribers USING(subscriber_id);
 \end{lstlisting}
 
 \section{Реализация запросов}
 
+Запросы можно найти в файле \textbf{citnisdb-queries.sql}.
 Переменные в запросе будем обозначать как \$(название-переменной). 
 Везде где требуется найти общее число записей, просто заменяем
 \textbf{SELECT названия столбцов FROM} на 
