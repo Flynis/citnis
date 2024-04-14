@@ -51,10 +51,10 @@ Payphone и Phone number.
 
 \section{Триггеры}
 
-У АТС имеется диапозон доступных номеров телефонов. При расширении этого 
-диапозона проблем нет, а вот при его уменьшении существующий номер 
-телефона может оказаться вне диапозона. Поэтому запретим уменьшать 
-диапозон номеров.
+\textbf{1.} У АТС имеется диапозон доступных номеров телефонов. 
+При расширении этого диапозона проблем нет, а вот при его 
+уменьшении существующий номер телефона может оказаться 
+вне диапозона. Поэтому запретим уменьшать диапозон номеров.
 
 \begin{lstlisting}
 CREATE FUNCTION prohibit_ats_reduction_row() RETURNS trigger AS $$
@@ -71,7 +71,7 @@ CREATE TRIGGER prohibit_ats_reduction
     FOR EACH ROW EXECUTE PROCEDURE prohibit_ats_reduction_row();
 \end{lstlisting}
 
-При вставке/изменении телефона мы должны проверить, 
+\textbf{2.} При вставке/изменении телефона мы должны проверить, 
 что номер телефона попадает в допустимый у АТС диапозон.
 
 \begin{lstlisting}
@@ -92,8 +92,8 @@ CREATE TRIGGER check_phone_number
     FOR EACH ROW EXECUTE PROCEDURE check_phone_number_row();
 \end{lstlisting}
 
-При изменении типа конечного устройства у номера телефона, необходимо проверить,
-что им владеет не больше одного абонента.
+\textbf{3.} При изменении типа конечного устройства у номера телефона, 
+необходимо проверить, что им владеет не больше одного абонента.
 
 \begin{lstlisting}
 CREATE FUNCTION phone_type_update_row() RETURNS trigger AS $$
@@ -117,44 +117,33 @@ CREATE TRIGGER phone_type_update
     EXECUTE PROCEDURE phone_type_update_row();
 \end{lstlisting}
 
-Чтобы не терять должников, не будем удалять их. То есть запретим
-удаление абонентов с задолжностью.
-
-\begin{lstlisting}
-CREATE FUNCTION prohibit_debtor_remove_row() RETURNS trigger AS $$
-BEGIN
-    IF (OLD.debt > 0)
-    THEN RETURN NULL;
-    ELSE RETURN OLD;
-    END IF;
-END;
-$$ LANGUAGE plpgsql;
-CREATE TRIGGER prohibit_debtor_remove 
-    BEFORE DELETE ON subscribers
-    FOR EACH ROW 
-    EXECUTE PROCEDURE prohibit_debtor_remove_row();
-\end{lstlisting}
-
-При вставке/обновлении абонемента нам нужно проверить, чтобы у
-обычных и спаренных телефонов был один владелец, а у владельцев
-параллельных - был одинаковый адрес. Кроме того, для нового абонемента
+\textbf{4.} При вставке/обновлении абонемента нам нужно проверить, 
+чтобы у обычных и спаренных телефонов был один владелец, 
+а у владельцев параллельных - был одинаковый адрес. 
+Кроме того, для нового абонемента
 будем сразу подключать услугу ``Звонок''.
 
 \begin{lstlisting}
 CREATE FUNCTION subscription_phone_check_row() RETURNS trigger AS $$
 DECLARE
     rec record;
+    ph record;
 BEGIN
-    IF (NEW.phone_type = 'Parallel')
+    SELECT * INTO ph 
+        FROM phone_numbers_v 
+        WHERE phone_id = NEW.phone_id;
+    IF (ph.phone_type = 'Parallel')
     THEN
         SELECT COUNT(*) AS other_address_count INTO rec 
             FROM subscriptions 
             JOIN phones USING(phone_id)
-            WHERE (phone_id = NEW.phone_id AND 
-                    address_id != NEW.address_id);
+            WHERE (phone_id = ph.phone_id AND 
+                    address_id != ph.address_id);
         IF (rec.other_address_count > 0)
-        THEN RETURN NULL;
-        ELSE RETURN NEW;
+        THEN 
+            RETURN NULL;
+        ELSE 
+            RETURN NEW;
         END IF;
     ELSE
         SELECT COUNT(*) AS owners_count INTO rec 
@@ -162,8 +151,10 @@ BEGIN
             WHERE phone_id = NEW.phone_id;
         IF ((TG_OP = 'INSERT' AND rec.owners_count > 0) OR 
             (TG_OP = 'UPDATE' AND rec.owners_count > 1))
-        THEN RETURN NULL;
-        ELSE RETURN NEW;
+        THEN 
+            RETURN NULL;
+        ELSE 
+            RETURN NEW;
         END IF;
     END IF;
 END;
@@ -177,6 +168,7 @@ CREATE FUNCTION subscription_default_service_row() RETURNS trigger AS $$
 BEGIN
     INSERT INTO service_connection (subscription_id, service_id)
         VALUES(NEW.subscription_id, 1);
+    RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 CREATE TRIGGER subscription_default_service

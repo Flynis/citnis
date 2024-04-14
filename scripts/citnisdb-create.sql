@@ -1,17 +1,28 @@
+CREATE TABLE organizations
+( org_id            serial     NOT NULL,
+  org_name          text       NOT NULL,
+  PRIMARY KEY ( org_id ),
+  UNIQUE( org_name )
+);
+
 CREATE TABLE ats
 ( ats_id            int        NOT NULL,
-  ats_name          text       NOT NULL,
+  org_id            int        NOT NULL,
+  serial_no         char ( 11 ) NOT NULL,
   first_phone_no    int        NOT NULL,
   last_phone_no     int        NOT NULL,
   PRIMARY KEY ( ats_id ),
-  UNIQUE( ats_name ),
+  UNIQUE( serial_no ),
   CONSTRAINT valid_first_phone CHECK ( 
     first_phone_no > 0 AND first_phone_no < 1000000000
   ),
   CONSTRAINT valid_last_phone CHECK ( 
     last_phone_no > 1 AND last_phone_no < 1000000000 AND
     last_phone_no > first_phone_no
-  )
+  ),
+  FOREIGN KEY ( org_id )
+    REFERENCES organizations ( org_id )
+    ON DELETE CASCADE
 );
 
 CREATE TABLE city_ats
@@ -123,18 +134,16 @@ CREATE TABLE subscribers
   gender            char ( 1 ),
   age               smallint, 
   benefit numeric ( 3, 2 ) DEFAULT 0 NOT NULL,
-  debt    numeric ( 10, 2 ) DEFAULT 0 NOT NULL,
   PRIMARY KEY ( subscriber_id ),
   CONSTRAINT valid_gender CHECK ( gender IN ( 'm', 'f' )),
   CONSTRAINT valid_age CHECK ( age >= 14 AND age <= 130 ),
   CONSTRAINT valid_benefit CHECK ( 
     benefit >= 0 AND benefit <= 1 
-  ),
-  CONSTRAINT valid_debt CHECK ( debt >= 0 )
+  )
 );
 
 CREATE TABLE subscriptions
-( subscription_id    serial     NOT NULL,
+( subscription_id   serial     NOT NULL,
   phone_id          int        NOT NULL,
   subscriber_id     int        NOT NULL,
   apartment         int,

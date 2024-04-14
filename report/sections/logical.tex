@@ -30,9 +30,8 @@
 Все ссылочные (целевые) отношения имеют сурогатный ключ, который
 нам незачем изменять. Поэтому для обеспечения ссылочной целостности
 при удалении будем использовать политику каскадного удаления, 
-а при обновлении - ничего не делать. Сущности АТС, Абонент, Номер телефона,
-Город, Район, Улица, Адрес имеют второй потенциальный ключ,
-наложим ограничение UNIQUE на него.
+а при обновлении - ничего не делать. Некоторые сущности 
+имеют второй потенциальный ключ наложим ограничение UNIQUE на него.
 
 Полный скрипт создания данной схемы находится в файле \textbf{citnisdb-create.sql}.
 
@@ -41,8 +40,11 @@
         colspec={|X[3]|X[3]|X[3]|X[1]|X[4]|}, row{1} = {c}, hlines,
     }
     Отношение & Атрибут & Тип & Not null & Ограничения \\
-    \SetCell[r=4]{c} ATS & ats\_id & int & + & PK \\ 
-    & ats\_name & text & + & \\
+    \SetCell[r=2]{c} Organization & org\_id & serial & + & PK \\ 
+    & org\_name & text & + & UNIQUE\\
+    \SetCell[r=5]{c} ATS & ats\_id & int & + & PK \\ 
+    & org\_id & int & + & FK \\
+    & serial\_no & char (11) & + & UNIQUE\\
     & first\_phone\_no & int & + & $(0, 1'000'000'000)$ \\
     & last\_phone\_no & int & + & $(1, 1'000'000'000)$, $last>first$ \\ 
     \SetCell[r=1]{c} City ATS & ats\_id & int & + & PK-FK \\
@@ -55,20 +57,19 @@
     \SetCell[r=1]{c} Payphone & phone\_id & int & + & PK-FK \\
     \SetCell[r=2]{c} Phone number & phone\_id & int & + & PK-FK \\ 
     & phone\_type & text & + & IN (`Common', `Parallel', `Paired'), $default=$ `Common' \\ 
-    \SetCell[r=8]{c} Subscriber (Абонент) & subscriber\_id & serial & + & PK \\ 
+    \SetCell[r=7]{c} Subscriber (Абонент) & subscriber\_id & serial & + & PK \\ 
     & first\_name & text & + & \\
     & last\_name & text & + & \\
     & surname & text & - & \\
     & gender & char (1) & - & IN (`m', `f') \\
     & age & smallint & - & $[14, 130]$ \\ 
     & benefit & numeric (3, 2) & + & $[0, 1.00], default=0$ \\ 
-    & debt & numeric (10, 2) & + & $\geq 0, default=0$ \\ 
     \SetCell[r=4]{c} Subscription (Абонемент) & subscription\_id & serial & + & PK \\ 
     & phone\_id & int & + & FK \\
     & subscriber\_id & int & + & FK \\
     & apartment & int & - & $>0$ \\ 
     \SetCell[r=3]{c} Service (Услуга) & service\_id & serial & + & PK \\ 
-    & service\_name & text & + & \\
+    & service\_name & text & + & UNIQUE\\
     & service\_cost & numeric (10, 2) & + & $\geq 0, default=0$ \\
     \SetCell[r=3]{c} Service Connection & subscription\_id & int & + & PK-FK \\ 
     & service\_id & int & + & PK-FK \\

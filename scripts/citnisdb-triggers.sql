@@ -16,8 +16,8 @@ CREATE FUNCTION city_ats_insert_row() RETURNS trigger AS $$
 DECLARE
     id integer := nextval('ats_id_seq');
 BEGIN
-    INSERT INTO ats (ats_id, ats_name, first_phone_no, last_phone_no)
-        VALUES(id, NEW.ats_name, NEW.first_phone_no, NEW.last_phone_no);
+    INSERT INTO ats (ats_id, org_id, serial_no, first_phone_no, last_phone_no)
+        VALUES(id, NEW.org_id, NEW.serial_no, NEW.first_phone_no, NEW.last_phone_no);
     INSERT INTO city_ats (ats_id)
         VALUES(id);
     RETURN NEW;
@@ -34,7 +34,8 @@ BEGIN
     THEN RETURN NULL;
     END IF;
     UPDATE ats
-        SET ats_name = NEW.ats_name,
+        SET org_id = NEW.org_id,
+            serial_no = NEW.serial_no,
             first_phone_no = NEW.first_phone_no,
             last_phone_no = NEW.last_phone_no;
     RETURN NEW;
@@ -71,8 +72,8 @@ CREATE FUNCTION department_ats_insert_row() RETURNS trigger AS $$
 DECLARE
     id integer := nextval('ats_id_seq');
 BEGIN
-    INSERT INTO ats (ats_id, ats_name, first_phone_no, last_phone_no)
-        VALUES(id, NEW.ats_name, NEW.first_phone_no, NEW.last_phone_no);
+    INSERT INTO ats (ats_id, org_id, serial_no, first_phone_no, last_phone_no)
+        VALUES(id, NEW.org_id, NEW.serial_no, NEW.first_phone_no, NEW.last_phone_no);
     INSERT INTO department_ats (ats_id)
         VALUES(id);
     RETURN NEW;
@@ -89,7 +90,8 @@ BEGIN
     THEN RETURN NULL;
     END IF;
     UPDATE ats
-        SET ats_name = NEW.ats_name,
+        SET org_id = NEW.org_id,
+            serial_no = NEW.serial_no,
             first_phone_no = NEW.first_phone_no,
             last_phone_no = NEW.last_phone_no;
     RETURN NEW;
@@ -126,8 +128,8 @@ CREATE FUNCTION institution_ats_insert_row() RETURNS trigger AS $$
 DECLARE
     id integer := nextval('ats_id_seq');
 BEGIN
-    INSERT INTO ats (ats_id, ats_name, first_phone_no, last_phone_no)
-        VALUES(id, NEW.ats_name, NEW.first_phone_no, NEW.last_phone_no);
+    INSERT INTO ats (ats_id, org_id, serial_no, first_phone_no, last_phone_no)
+        VALUES(id, NEW.org_id, NEW.serial_no, NEW.first_phone_no, NEW.last_phone_no);
     INSERT INTO institution_ats (ats_id)
         VALUES(id);
     RETURN NEW;
@@ -144,7 +146,8 @@ BEGIN
     THEN RETURN NULL;
     END IF;
     UPDATE ats
-        SET ats_name = NEW.ats_name,
+        SET org_id = NEW.org_id,
+            serial_no = NEW.serial_no,
             first_phone_no = NEW.first_phone_no,
             last_phone_no = NEW.last_phone_no;
     RETURN NEW;
@@ -350,32 +353,21 @@ CREATE TRIGGER phone_type_update
     FOR EACH ROW 
     EXECUTE PROCEDURE phone_type_update_row();
 
-CREATE FUNCTION prohibit_debtor_remove_row() RETURNS trigger AS $$
-BEGIN
-    IF (OLD.debt > 0)
-    THEN
-        RETURN NULL;
-    ELSE
-        RETURN OLD;
-    END IF;
-END;
-$$ LANGUAGE plpgsql;
-CREATE TRIGGER prohibit_debtor_remove 
-    BEFORE DELETE ON subscribers
-    FOR EACH ROW 
-    EXECUTE PROCEDURE prohibit_debtor_remove_row();
-
 CREATE FUNCTION subscription_phone_check_row() RETURNS trigger AS $$
 DECLARE
     rec record;
+    ph record;
 BEGIN
-    IF (NEW.phone_type = 'Parallel')
+    SELECT * INTO ph 
+        FROM phone_numbers_v 
+        WHERE phone_id = NEW.phone_id;
+    IF (ph.phone_type = 'Parallel')
     THEN
         SELECT COUNT(*) AS other_address_count INTO rec 
             FROM subscriptions 
             JOIN phones USING(phone_id)
-            WHERE (phone_id = NEW.phone_id AND 
-                    address_id != NEW.address_id);
+            WHERE (phone_id = ph.phone_id AND 
+                    address_id != ph.address_id);
         IF (rec.other_address_count > 0)
         THEN 
             RETURN NULL;
@@ -405,6 +397,7 @@ CREATE FUNCTION subscription_default_service_row() RETURNS trigger AS $$
 BEGIN
     INSERT INTO service_connection (subscription_id, service_id)
         VALUES(NEW.subscription_id, 1);
+    RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 CREATE TRIGGER subscription_default_service
