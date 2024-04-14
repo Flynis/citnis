@@ -76,8 +76,8 @@
     & payment\_date & date & + & $default=$ current date \\
     \SetCell[r=5]{c} Call log & initiator & int & + & PK-FK \\ 
     & call\_time & timestamptz & + & PK \\
-    & recipient_no & bigint & + & $(1'000'000'00'00, 100'000'000'00'00)$ \\
-    & recipient_ats_address & int & + & FK \\
+    & recipient\_no & bigint & + & $(1'000'000'00'00$, $100'000'000'00'00)$ \\
+    & recipient\_ats \_address & int & + & FK \\
     & duration & int & + & $>0, default=1$ \\
     \SetCell[r=2]{c} City & city\_id & serial & + & PK \\ 
     & city\_name & text & + & \\ 
