@@ -1,0 +1,64 @@
+.root {
+    -fx-font-family: "Open Sans";
+    -background: #F1F2F2;
+    -light-background: white;
+    -foreground: white;
+    -sideprimary: #264653;
+    -sidesecondary: #3A5662;
+}
+
+.sidebar {
+    -fx-background-color: -sideprimary;
+}
+
+.sidemenu {
+    -fx-background-color: -sidesecondary;
+}
+
+.sidebtn {
+    -fx-border-width: 0;
+    -fx-border-radius: 0;
+    -jfx-button-type: FLAT;
+    -fx-font-size: 16px;
+    -fx-background-color: -sidesecondary;
+    -fx-text-fill: -foreground;
+}
+
+.sidebtn-selected {
+    -fx-border-width: 0;
+    -fx-border-radius: 0;
+    -jfx-button-type: FLAT;
+    -fx-font-size: 16px;
+    -fx-background-color: -sideprimary;
+    -fx-text-fill: #1E736A;
+}
+
+.sidebtn:hover {
+    -fx-background-color: -sideprimary;
+    -fx-text-fill: #1E736A;
+}
+
+.page-header {
+    -fx-background-color: #31B28A;
+}
+
+.content-area {
+    -fx-background-color: -background;
+}
+
+.page-title {
+    -fx-font-size: 20px;
+    -fx-font-weight: bold;
+    -fx-text-fill: -foreground;
+}
+
+.query-settings {
+    -fx-background-color: -light-background;
+    -fx-border-width: 1;
+    -fx-border-radius: 10;
+    -fx-border-color: gray;
+}
+
+.query-form {
+    -fx-border-width: 0;
+}

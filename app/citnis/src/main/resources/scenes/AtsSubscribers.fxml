@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+
+
+<?import javafx.geometry.Insets?>
+<BorderPane prefHeight="Infinity" prefWidth="Infinity" xmlns="http://javafx.com/javafx/17.0.2-ea" xmlns:fx="http://javafx.com/fxml/1" fx:controller="ru.dyakun.citnis.gui.controller.AtsSubscribersScene">
+   <top>
+      <BorderPane styleClass="page-header" prefHeight="40.0" prefWidth="Infinity" BorderPane.alignment="CENTER">
+         <padding>
+            <Insets left="20" />
+         </padding>
+         <left>
+            <Label styleClass="page-title" text="Абоненты АТС" BorderPane.alignment="CENTER_LEFT"/>
+         </left>
+      </BorderPane>
+   </top>
+   <center>
+      <VBox styleClass="content-area" spacing="5" prefHeight="Infinity" prefWidth="Infinity">
+         <padding>
+            <Insets left="5" top="5" right="5" bottom="5" />
+         </padding>
+         <AnchorPane fx:id="queryPane" styleClass="query-settings"/>
+      </VBox>
+   </center>
+</BorderPane>
