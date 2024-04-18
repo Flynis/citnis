@@ -3,38 +3,39 @@
     -background: #F1F2F2;
     -light-background: white;
     -foreground: white;
-    -sideprimary: #264653;
-    -sidesecondary: #3A5662;
+    -side-primary: #264653;
+    -side-secondary: #3A5662;
 }
 
-.sidebar {
-    -fx-background-color: -sideprimary;
+.side-menu {
+    -fx-background-color: -side-secondary;
 }
 
-.sidemenu {
-    -fx-background-color: -sidesecondary;
-}
-
-.sidebtn {
-    -fx-border-width: 0;
-    -fx-border-radius: 0;
-    -jfx-button-type: FLAT;
-    -fx-font-size: 16px;
-    -fx-background-color: -sidesecondary;
+.side-label {
+    -fx-font-size: 18px;
     -fx-text-fill: -foreground;
 }
 
-.sidebtn-selected {
+.side-btn {
     -fx-border-width: 0;
     -fx-border-radius: 0;
     -jfx-button-type: FLAT;
     -fx-font-size: 16px;
-    -fx-background-color: -sideprimary;
+    -fx-background-color: -side-secondary;
+    -fx-text-fill: -foreground;
+}
+
+.side-btn-selected {
+    -fx-border-width: 0;
+    -fx-border-radius: 0;
+    -jfx-button-type: FLAT;
+    -fx-font-size: 14px;
+    -fx-background-color: -side-primary;
     -fx-text-fill: #1E736A;
 }
 
-.sidebtn:hover {
-    -fx-background-color: -sideprimary;
+.side-btn:hover {
+    -fx-background-color: -side-primary;
     -fx-text-fill: #1E736A;
 }
 

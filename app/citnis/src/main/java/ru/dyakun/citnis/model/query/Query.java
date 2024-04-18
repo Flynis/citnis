@@ -1,6 +1,6 @@
 package ru.dyakun.citnis.model.query;
 
-import ru.dyakun.citnis.form.structure.Form;
+import com.dlsc.formsfx.model.structure.Form;
 
 public interface Query {
 

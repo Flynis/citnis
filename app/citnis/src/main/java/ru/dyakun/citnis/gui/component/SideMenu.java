@@ -1,8 +1,6 @@
 package ru.dyakun.citnis.gui.component;
 
 import com.jfoenix.controls.JFXButton;
-import javafx.event.ActionEvent;
-import javafx.event.EventHandler;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Node;
 import javafx.scene.Parent;
@@ -38,15 +36,15 @@ public class SideMenu {
                 throw new RuntimeException(e);
             }
             JFXButton button = new JFXButton(pageDesc.getTitle());
-            button.getStyleClass().add("sidebtn");
+            button.getStyleClass().add("side-btn");
             button.setPrefWidth(Double.POSITIVE_INFINITY);
             button.setOnAction(actionEvent -> setPage(pageDesc));
             buttonArea.getChildren().add(button);
             buttons.put(pageDesc, button);
         }
         current = PageDesc.values()[0];
-        buttons.get(current).getStyleClass().remove("sidebtn");
-        buttons.get(current).getStyleClass().add("sidebtn-selected");
+        buttons.get(current).getStyleClass().remove("side-btn");
+        buttons.get(current).getStyleClass().add("side-btn-selected");
         Node page = pages.get(current);
         contentArea.getChildren().clear();
         contentArea.getChildren().add(page);
@@ -56,11 +54,11 @@ public class SideMenu {
         if(desc == current) {
             return;
         }
-        buttons.get(current).getStyleClass().remove("sidebtn-selected");
-        buttons.get(current).getStyleClass().add("sidebtn");
+        buttons.get(current).getStyleClass().remove("side-btn-selected");
+        buttons.get(current).getStyleClass().add("side-btn");
         current = desc;
-        buttons.get(current).getStyleClass().remove("sidebtn");
-        buttons.get(current).getStyleClass().add("sidebtn-selected");
+        buttons.get(current).getStyleClass().remove("side-btn");
+        buttons.get(current).getStyleClass().add("side-btn-selected");
         Node page = pages.get(current);
         contentArea.getChildren().clear();
         contentArea.getChildren().add(page);

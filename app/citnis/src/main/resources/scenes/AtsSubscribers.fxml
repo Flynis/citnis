@@ -21,7 +21,7 @@
          <padding>
             <Insets left="5" top="5" right="5" bottom="5" />
          </padding>
-         <AnchorPane fx:id="queryPane" styleClass="query-settings"/>
+         <AnchorPane fx:id="queryForm" styleClass="query-settings"/>
       </VBox>
    </center>
 </BorderPane>

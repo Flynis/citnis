@@ -1,8 +1,12 @@
 package ru.dyakun.citnis.model.query;
 
+import com.dlsc.formsfx.model.structure.Field;
+import com.dlsc.formsfx.model.structure.Form;
+import com.dlsc.formsfx.model.structure.Group;
+import com.dlsc.formsfx.view.util.ColSpan;
 import javafx.beans.property.*;
 import javafx.collections.FXCollections;
-import ru.dyakun.citnis.form.structure.*;
+
 
 public class AtsSubscribersQuery implements Query {
 
@@ -16,15 +20,16 @@ public class AtsSubscribersQuery implements Query {
     public AtsSubscribersQuery() {
         ats = new SimpleStringProperty(allAts.get(0));
         form = Form.of(
-                Field.ofBoolean(onlyBeneficiaries)
-                        .label("Только льготники")
-//                Field.ofStringType(ats)
-//                        .label("АТС"),
-//
-//                Field.ofIntegerType(ageFrom)
-//                        .label("Возраст от"),
-//                Field.ofIntegerType(ageTo)
-//                        .label("до")
+                Group.of(
+                        Field.ofStringType(ats)
+                                .label("АТС"),
+                        Field.ofBooleanType(onlyBeneficiaries)
+                                .label("Только льготники").span(4),
+                        Field.ofIntegerType(ageFrom)
+                                .label("Возраст от").span(4),
+                        Field.ofIntegerType(ageTo)
+                                .label("до").span(4)
+                )
         );
     }
 
