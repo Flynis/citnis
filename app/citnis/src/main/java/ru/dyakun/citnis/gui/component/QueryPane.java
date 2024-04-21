@@ -5,22 +5,18 @@ import com.dlsc.formsfx.view.renderer.FormRenderer;
 import javafx.scene.control.Button;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
-import ru.dyakun.citnis.model.query.Query;
+import ru.dyakun.citnis.gui.query.Query;
 
 public class QueryPane extends BorderPane {
 
     public QueryPane(Query query) {
         Form form = query.getForm();
         FormRenderer renderer = new FormRenderer(form);
-        renderer.getStyleClass().add("query-pane");
-        renderer.setPrefWidth(900);
-        renderer.getStyleClass().remove("formsfx-form");
-
-        Button button = new Button("Ok");
-        HBox hBox = new HBox(button);
+        for(var child: renderer.getChildren()) {
+            child.getStyleClass().remove("formsfx-group");
+        }
 
         setCenter(renderer);
-        setBottom(hBox);
     }
 
 }

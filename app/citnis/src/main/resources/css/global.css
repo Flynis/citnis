@@ -1,14 +1,16 @@
 .root {
     -fx-font-family: "Open Sans";
-    -background: #F1F2F2;
-    -light-background: white;
+    -content-area-background: #F1F2F2;
+    -content-background: white;
     -foreground: white;
-    -side-primary: #264653;
-    -side-secondary: #3A5662;
+    -secondary: #264653;
+    -primary: #3A5662;
+    -header-background: #31B28A;
+    -error: red;
 }
 
 .side-menu {
-    -fx-background-color: -side-secondary;
+    -fx-background-color: -primary;
 }
 
 .side-label {
@@ -21,7 +23,7 @@
     -fx-border-radius: 0;
     -jfx-button-type: FLAT;
     -fx-font-size: 16px;
-    -fx-background-color: -side-secondary;
+    -fx-background-color: -primary;
     -fx-text-fill: -foreground;
 }
 
@@ -30,21 +32,17 @@
     -fx-border-radius: 0;
     -jfx-button-type: FLAT;
     -fx-font-size: 14px;
-    -fx-background-color: -side-primary;
+    -fx-background-color: -secondary;
     -fx-text-fill: #1E736A;
 }
 
 .side-btn:hover {
-    -fx-background-color: -side-primary;
+    -fx-background-color: -secondary;
     -fx-text-fill: #1E736A;
 }
 
 .page-header {
-    -fx-background-color: #31B28A;
-}
-
-.content-area {
-    -fx-background-color: -background;
+    -fx-background-color: -header-background;
 }
 
 .page-title {
@@ -53,13 +51,26 @@
     -fx-text-fill: -foreground;
 }
 
-.query-settings {
-    -fx-background-color: -light-background;
+.content-area {
+    -fx-background-color: -content-area-background;
+}
+
+.content {
+    -fx-background-color: -content-background;
     -fx-border-width: 1;
     -fx-border-radius: 10;
     -fx-border-color: gray;
 }
 
-.query-form {
-    -fx-border-width: 0;
+.form-btn {
+    -fx-border-radius: 10;
+    -jfx-button-type: RAISED;
+    -fx-font-size: 16px;
+    -fx-background-color: -primary;
+    -fx-text-fill: -foreground;
+}
+
+.error-label {
+    -fx-text-fill: -error;
+    -fx-font-size: 16px;
 }

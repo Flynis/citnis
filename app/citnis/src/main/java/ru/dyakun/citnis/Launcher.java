@@ -8,6 +8,7 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.dyakun.citnis.model.SelectionStorage;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -17,6 +18,7 @@ public class Launcher extends Application {
     private static final Logger logger = LoggerFactory.getLogger(Launcher.class);
 
     public static void main(String[] args) {
+        SelectionStorage.getInstance().init();
         launch(args);
     }
 

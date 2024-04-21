@@ -1,4 +1,4 @@
-package ru.dyakun.citnis.model.query;
+package ru.dyakun.citnis.gui.query;
 
 import com.dlsc.formsfx.model.structure.Form;
 
