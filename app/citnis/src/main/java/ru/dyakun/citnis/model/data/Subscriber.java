@@ -7,15 +7,15 @@ import javafx.beans.property.StringProperty;
 
 public class Subscriber {
 
-    private final StringProperty firstname;
     private final StringProperty lastname;
+    private final StringProperty firstname;
     private final StringProperty surname;
     private final IntegerProperty age;
     private final StringProperty gender;
 
     public Subscriber(String lastname, String firstname, String surname, int age, String gender) {
-        this.firstname = new SimpleStringProperty(firstname);
         this.lastname = new SimpleStringProperty(lastname);
+        this.firstname = new SimpleStringProperty(firstname);
         this.surname = new SimpleStringProperty(surname);
         this.age = new SimpleIntegerProperty(age);
         this.gender = new SimpleStringProperty(gender);

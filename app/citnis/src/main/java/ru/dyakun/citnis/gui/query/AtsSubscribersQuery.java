@@ -4,8 +4,9 @@ import com.dlsc.formsfx.model.structure.*;
 import ru.dyakun.citnis.model.Mapper;
 import ru.dyakun.citnis.model.Query;
 import ru.dyakun.citnis.model.SelectionStorage;
-import ru.dyakun.citnis.model.data.Ats;
 import ru.dyakun.citnis.model.data.Subscriber;
+
+import static ru.dyakun.citnis.model.SelectionUtil.convertStringSortType;
 
 public class AtsSubscribersQuery implements Query<Subscriber> {
 
@@ -48,7 +49,7 @@ public class AtsSubscribersQuery implements Query<Subscriber> {
                 rs.getString("first_name"),
                 rs.getString("surname"),
                 rs.getInt("age"),
-                (rs.getString("gender").equals("m") ? "male" : "female")
+                (rs.getString("gender").equals("m") ? "мужской" : "женский")
         );
     }
 
@@ -65,12 +66,12 @@ public class AtsSubscribersQuery implements Query<Subscriber> {
         builder.append(String.format("\tWHERE (age >= %d) AND (age <= %d)\n", ageFrom.getValue(), ageTo.getValue()));
         if(!ats.getSelection().equals(SelectionStorage.notChosen)) {
             String atsSerial = storage.getAtsByName(ats.getSelection()).getSerial();
-            builder.append(String.format("\t\tAND (serial_no = %s)\n", atsSerial));
+            builder.append(String.format("\t\tAND (serial_no = '%s')\n", atsSerial));
         }
         if(onlyBeneficiaries.getValue()) {
             builder.append("\t\tAND (benefit >= 0.5)\n");
         }
-        String sqlSort = storage.sqlSortTypeFromStringSortType(sortType.getSelection());
+        String sqlSort = convertStringSortType(sortType.getSelection());
         builder.append(String.format("\tORDER BY last_name %s;\n", sqlSort));
         return builder.toString();
     }
