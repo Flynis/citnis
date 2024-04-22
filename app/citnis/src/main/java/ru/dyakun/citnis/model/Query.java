@@ -1,11 +1,13 @@
-package ru.dyakun.citnis.gui.query;
+package ru.dyakun.citnis.model;
 
 import com.dlsc.formsfx.model.structure.Form;
 
-public interface Query {
+public interface Query<T> {
 
     Form getForm();
 
     String getQuery();
+
+    Mapper<T> getMapper();
 
 }

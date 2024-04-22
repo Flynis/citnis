@@ -3,7 +3,6 @@
 <?import javafx.geometry.*?>
 <?import javafx.scene.layout.*?>
 
-<?import javafx.scene.control.Label?>
 <BorderPane maxHeight="-Infinity" maxWidth="-Infinity"
             minHeight="480" minWidth="640"
             prefHeight="900.0" prefWidth="1600.0"
@@ -12,18 +11,10 @@
             xmlns:fx="http://javafx.com/fxml/1"
             fx:controller="ru.dyakun.citnis.gui.controller.MainScene">
    <left>
-       <VBox prefHeight="Infinity" prefWidth="150.0" styleClass="side-menu" BorderPane.alignment="CENTER" spacing="10">
+       <VBox fx:id="sidebar" prefHeight="Infinity" prefWidth="200.0" styleClass="side-menu" BorderPane.alignment="CENTER" spacing="10">
            <padding>
-               <Insets top="100" />
+               <Insets top="50" />
            </padding>
-           <VBox prefHeight="20" prefWidth="Infinity">
-               <padding>
-                   <Insets left="10" />
-               </padding>
-               <Label styleClass="side-label" text="Запросы" alignment="BOTTOM_LEFT"/>
-           </VBox>
-           <VBox fx:id="sideMenu" prefWidth="Infinity" styleClass="side-menu" VBox.vgrow="ALWAYS">
-           </VBox>
        </VBox>
    </left>
    <center>

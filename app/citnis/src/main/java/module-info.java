@@ -9,5 +9,5 @@ module ru.dyakun.citnis {
 
     opens ru.dyakun.citnis;
     opens ru.dyakun.citnis.gui.controller to javafx.fxml;
-    opens ru.dyakun.citnis.gui.component to javafx.fxml;
+    opens ru.dyakun.citnis.model.data to javafx.base;
 }

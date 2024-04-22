@@ -42,7 +42,7 @@ public class DatabaseManager {
     }
 
     public <T> List<T> executeQuery(String query, Mapper<T> mapper) {
-        logger.info("Executing query: \n{}", query);
+        logger.info("Executing query: \n{}\n", query);
         List<T> result = new ArrayList<>();
         try (Connection con = DriverManager.getConnection(url, user, passwd);
                 PreparedStatement pst = con.prepareStatement(query);
