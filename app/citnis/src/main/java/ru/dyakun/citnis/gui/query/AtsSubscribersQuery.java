@@ -1,6 +1,9 @@
 package ru.dyakun.citnis.gui.query;
 
 import com.dlsc.formsfx.model.structure.*;
+import com.dlsc.formsfx.model.validators.CustomValidator;
+import com.dlsc.formsfx.model.validators.IntegerRangeValidator;
+import com.dlsc.formsfx.model.validators.Validator;
 import ru.dyakun.citnis.model.Mapper;
 import ru.dyakun.citnis.model.Query;
 import ru.dyakun.citnis.model.SelectionStorage;
@@ -28,13 +31,19 @@ public class AtsSubscribersQuery implements Query<Subscriber> {
                 .ofBooleanType(false)
                 .label("Только льготники")
                 .span(4);
+        Validator<Integer> ageValidator = IntegerRangeValidator.between(14, 130,
+                "Возраст от 14 до 130 лет");
         ageFrom = Field
                 .ofIntegerType(18)
                 .label("Возраст от")
-                .span(4);
+                .span(4)
+                .validate(ageValidator);
+        Validator<Integer> ageToValidator = CustomValidator.forPredicate(
+                integer -> integer >= ageFrom.getValue(), "Верхняя граница должна быть больше нижней");
         ageTo = Field.ofIntegerType(100)
                 .label("до")
-                .span(4);
+                .span(4)
+                .validate(ageValidator, ageToValidator);
         firstLastNameChar = Field
                 .ofSingleSelectionType(selection.alphabet(), 0)
                 .label("Первая буква фамилии")

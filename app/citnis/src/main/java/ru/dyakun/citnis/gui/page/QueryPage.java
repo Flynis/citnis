@@ -18,7 +18,6 @@ public class QueryPage<T> extends BorderPane {
 
     private final Query<T> query;
     private final Button okBtn;
-    private final Label errorLabel;
     private final TableView<T> tableView;
 
     public QueryPage(String title, Query<T> query, TableView<T> tableView) {
@@ -41,13 +40,10 @@ public class QueryPage<T> extends BorderPane {
         okBtn = new Button("Найти");
         okBtn.getStyleClass().add("form-btn");
 
-        errorLabel = new Label("Error");
-        errorLabel.getStyleClass().add("error-label");
-
         HBox hBox = new HBox();
         hBox.setSpacing(10);
         hBox.setPadding(new Insets(0, 0, 30, 30));
-        hBox.getChildren().addAll(okBtn, errorLabel);
+        hBox.getChildren().addAll(okBtn);
 
         Form form = query.getForm();
         FormRenderer formPane = new FormRenderer(form);
@@ -85,9 +81,13 @@ public class QueryPage<T> extends BorderPane {
     }
 
     public void onClick() {
-        DatabaseManager manager = DatabaseManager.getInstance();
-        var subscribers = manager.executeQuery(query.getQuery(), query.getMapper());
-        tableView.setItems(FXCollections.observableList(subscribers));
+        Form form = query.getForm();
+        if(form.isValid()) {
+            form.persist();
+            DatabaseManager manager = DatabaseManager.getInstance();
+            var subscribers = manager.executeQuery(query.getQuery(), query.getMapper());
+            tableView.setItems(FXCollections.observableList(subscribers));
+        }
     }
 
 }

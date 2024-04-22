@@ -3,18 +3,22 @@
     -content-area-background: #F1F2F2;
     -content-background: white;
     -foreground: white;
+    -foreground2: #D5D8DC;
+    -foreground3: #ABB2B9;
     -secondary: #264653;
+    -tertiary: #4987A0;
     -primary: #3A5662;
     -header-background: #31B28A;
     -error: red;
 }
 
 .side-menu {
-    -fx-background-color: -primary;
+    -fx-background-color: -secondary;
 }
 
 .side-label {
-    -fx-font-size: 18px;
+    -fx-font-size: 16px;
+    -fx-font-weight: bold;
     -fx-text-fill: -foreground;
 }
 
@@ -22,9 +26,10 @@
     -fx-border-width: 0;
     -fx-border-radius: 0;
     -jfx-button-type: FLAT;
-    -fx-font-size: 16px;
-    -fx-background-color: -primary;
-    -fx-text-fill: -foreground;
+    -fx-font-size: 14px;
+    -fx-text-alignment: left;
+    -fx-background-color: -secondary;
+    -fx-text-fill: -foreground3;
 }
 
 .side-btn-selected {
@@ -32,13 +37,14 @@
     -fx-border-radius: 0;
     -jfx-button-type: FLAT;
     -fx-font-size: 14px;
-    -fx-background-color: -secondary;
-    -fx-text-fill: #1E736A;
+    -fx-text-alignment: left;
+    -fx-background-color: -primary;
+    -fx-text-fill: -foreground;
 }
 
 .side-btn:hover {
-    -fx-background-color: -secondary;
-    -fx-text-fill: #1E736A;
+    -fx-background-color: -primary;
+    -fx-text-fill: -foreground2;
 }
 
 .page-header {
@@ -63,14 +69,14 @@
 }
 
 .form-btn {
-    -fx-border-radius: 10;
-    -jfx-button-type: RAISED;
+    -fx-border-radius: 50;
+    -fx-border-size: 4;
+    -jfx-button-type: FLAT;
     -fx-font-size: 16px;
     -fx-background-color: -primary;
     -fx-text-fill: -foreground;
 }
 
-.error-label {
-    -fx-text-fill: -error;
-    -fx-font-size: 16px;
+.form-btn:hover {
+    -fx-background-color: -tertiary;
 }

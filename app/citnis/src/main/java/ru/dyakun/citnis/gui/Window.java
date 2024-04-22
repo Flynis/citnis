@@ -21,6 +21,8 @@ public class Window {
         InputStream iconStream = Objects.requireNonNull(getClass().getResourceAsStream("/icons/city.png"));
         Image image = new Image(iconStream);
         stage.getIcons().add(image);
+        stage.setMinHeight(480);
+        stage.setMinWidth(640);
         try {
             Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/scenes/MainScene.fxml")));
             Scene scene = new Scene(root);

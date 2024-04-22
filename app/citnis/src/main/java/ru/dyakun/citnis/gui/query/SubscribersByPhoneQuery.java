@@ -1,6 +1,9 @@
 package ru.dyakun.citnis.gui.query;
 
 import com.dlsc.formsfx.model.structure.*;
+import com.dlsc.formsfx.model.validators.CustomValidator;
+import com.dlsc.formsfx.model.validators.StringLengthValidator;
+import com.dlsc.formsfx.model.validators.Validator;
 import ru.dyakun.citnis.model.Mapper;
 import ru.dyakun.citnis.model.Query;
 import ru.dyakun.citnis.model.SelectionStorage;
@@ -17,11 +20,23 @@ public class SubscribersByPhoneQuery implements Query<Subscriber> {
 
     public SubscribersByPhoneQuery() {
         SelectionStorage selection = SelectionStorage.getInstance();
+        Validator<String> numberValidator = CustomValidator.forPredicate(string -> {
+            for(int i = 0; i < string.length(); i++) {
+                if(!Character.isDigit(string.charAt(i))) {
+                    return false;
+                }
+            }
+            return true;
+        }, "Номер состоит только из цифр");
+        Validator<String> lengthValidator = StringLengthValidator.between(1, 8,
+                "Номер может иметь длину от 1 до 8 цифр");
         number = Field
                 .ofStringType("")
                 .placeholder("1001000")
                 .label("Номер телефона")
-                .span(8);
+                .span(8)
+                .validate(lengthValidator, numberValidator)
+                .required("Не все поля заполнены");
         sortType = Field
                 .ofSingleSelectionType(selection.stringSort(), 0)
                 .label("Сортировать")

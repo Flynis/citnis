@@ -38,10 +38,10 @@ public class MainScene implements Initializable {
         var atsSubscribersPage = new QueryPageBuilder<>(new AtsSubscribersQuery())
                 .tableview(new TableBuilder<Subscriber>()
                             .styleClass("query-table")
-                            .stringCol("Фамилия", "lastname")
-                            .stringCol("Имя", "firstname")
-                            .intCol("Возраст", "age")
-                            .stringCol("Пол", "gender")
+                            .stringCol("Фамилия", "lastname", 150)
+                            .stringCol("Имя", "firstname", 150)
+                            .intCol("Возраст", "age", 50)
+                            .stringCol("Пол", "gender", 50)
                             .build())
                 .title("Абоненты АТС");
         queryPages.add(atsSubscribersPage);
@@ -49,9 +49,9 @@ public class MainScene implements Initializable {
         var freePhoneNumbersPage = new QueryPageBuilder<>(new FreePhoneNumbersQuery())
                 .tableview(new TableBuilder<PhoneNumber>()
                         .styleClass("query-table")
-                        .intCol("Номер", "number")
-                        .stringCol("Улица", "street")
-                        .intCol("Дом", "house")
+                        .intCol("Номер", "number", 100)
+                        .stringCol("Улица", "street", 150)
+                        .intCol("Дом", "house", 50)
                         .build())
                 .title("Свободные номеры");
         queryPages.add(freePhoneNumbersPage);
@@ -59,9 +59,9 @@ public class MainScene implements Initializable {
         var payphonesPage = new QueryPageBuilder<>(new PayphonesQuery())
                 .tableview(new TableBuilder<Payphone>()
                         .styleClass("query-table")
-                        .intCol("Номер", "number")
-                        .stringCol("Улица", "street")
-                        .intCol("Дом", "house")
+                        .intCol("Номер", "number", 100)
+                        .stringCol("Улица", "street", 150)
+                        .intCol("Дом", "house", 50)
                         .build())
                 .title("Таксофоны");
         queryPages.add(payphonesPage);
@@ -69,11 +69,11 @@ public class MainScene implements Initializable {
         var parallelPhonesPage = new QueryPageBuilder<>(new ParallelPhonesQuery())
                 .tableview(new TableBuilder<PhoneOwner>()
                         .styleClass("query-table")
-                        .stringCol("Фамилия", "lastname")
-                        .stringCol("Имя", "firstname")
-                        .intCol("Номер", "number")
-                        .stringCol("Улица", "street")
-                        .intCol("Дом", "house")
+                        .stringCol("Фамилия", "lastname", 150)
+                        .stringCol("Имя", "firstname", 150)
+                        .intCol("Номер", "number", 100)
+                        .stringCol("Улица", "street", 150)
+                        .intCol("Дом", "house", 50)
                         .build())
                 .title("Параллельные телефоны");
         queryPages.add(parallelPhonesPage);
@@ -81,9 +81,9 @@ public class MainScene implements Initializable {
         var phoneNumberByAddressPage = new QueryPageBuilder<>(new PhoneByAddressQuery())
                 .tableview(new TableBuilder<PhoneNumber>()
                         .styleClass("query-table")
-                        .intCol("Номер", "number")
-                        .stringCol("Улица", "street")
-                        .intCol("Дом", "house")
+                        .intCol("Номер", "number", 100)
+                        .stringCol("Улица", "street", 150)
+                        .intCol("Дом", "house", 50)
                         .build())
                 .title("Телефоны по адресу");
         queryPages.add(phoneNumberByAddressPage);
@@ -91,10 +91,10 @@ public class MainScene implements Initializable {
         var subscribersByPhonePage = new QueryPageBuilder<>(new SubscribersByPhoneQuery())
                 .tableview(new TableBuilder<Subscriber>()
                         .styleClass("query-table")
-                        .stringCol("Фамилия", "lastname")
-                        .stringCol("Имя", "firstname")
-                        .intCol("Возраст", "age")
-                        .stringCol("Пол", "gender")
+                        .stringCol("Фамилия", "lastname", 150)
+                        .stringCol("Имя", "firstname", 150)
+                        .intCol("Возраст", "age", 50)
+                        .stringCol("Пол", "gender", 50)
                         .build())
                 .title("Абоненты по номеру");
         queryPages.add(subscribersByPhonePage);
@@ -102,9 +102,9 @@ public class MainScene implements Initializable {
         var pairedPhonesForReplacementPage = new QueryPageBuilder<>(new PairedPhonesForReplacementQuery())
                 .tableview(new TableBuilder<PhoneNumber>()
                         .styleClass("query-table")
-                        .intCol("Номер", "number")
-                        .stringCol("Улица", "street")
-                        .intCol("Дом", "house")
+                        .intCol("Номер", "number", 100)
+                        .stringCol("Улица", "street", 150)
+                        .intCol("Дом", "house", 50)
                         .build())
                 .title("Спаренные телефоны под замену");
         queryPages.add(pairedPhonesForReplacementPage);
