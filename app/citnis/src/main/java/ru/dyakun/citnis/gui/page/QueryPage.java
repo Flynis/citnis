@@ -19,6 +19,7 @@ public class QueryPage<T> extends BorderPane {
     private final Query<T> query;
     private final Button okBtn;
     private final TableView<T> tableView;
+    private final Label resultLabel;
 
     public QueryPage(String title, Query<T> query, TableView<T> tableView) {
         this.query = query;
@@ -56,6 +57,14 @@ public class QueryPage<T> extends BorderPane {
         querySettings.setCenter(formPane);
         querySettings.setBottom(hBox);
 
+        resultLabel = new Label("Найдено 0 результатов");
+        resultLabel.getStyleClass().add("result-label");
+
+        BorderPane resultPane = new BorderPane();
+        resultPane.getStyleClass().add("content");
+        resultPane.setPadding(new Insets(5, 5, 5, 30));
+        resultPane.setLeft(resultLabel);
+
         BorderPane tableBox = new BorderPane();
         tableBox.setPadding(new Insets(5, 5, 5, 5));
         tableBox.getStyleClass().add("content");
@@ -65,7 +74,7 @@ public class QueryPage<T> extends BorderPane {
         contentArea.getStyleClass().add("content-area");
         contentArea.setPadding(new Insets(5, 5, 5, 5));
         contentArea.setSpacing(5);
-        contentArea.getChildren().addAll(querySettings, tableBox);
+        contentArea.getChildren().addAll(querySettings, resultPane, tableBox);
 
         ScrollPane scrollPane = new ScrollPane();
         scrollPane.setFitToWidth(true);
@@ -80,13 +89,28 @@ public class QueryPage<T> extends BorderPane {
         okBtn.setOnAction(e -> onClick());
     }
 
+    private void setResultLabelText(int count) {
+        StringBuilder builder = new StringBuilder("Найдено ");
+        builder.append(count);
+        builder.append(' ');
+        int last2 = count % 100;
+        int last = (last2 < 11 || last2 > 14) ? count % 10 : 0;
+        switch (last) {
+            case 1 -> builder.append("результат");
+            case 2, 3, 4 -> builder.append("результата");
+            default -> builder.append("результатов");
+        }
+        resultLabel.setText(builder.toString());
+    }
+
     public void onClick() {
         Form form = query.getForm();
         if(form.isValid()) {
             form.persist();
             DatabaseManager manager = DatabaseManager.getInstance();
-            var subscribers = manager.executeQuery(query.getQuery(), query.getMapper());
-            tableView.setItems(FXCollections.observableList(subscribers));
+            var data = manager.executeQuery(query.getQuery(), query.getMapper());
+            setResultLabelText(data.size());
+            tableView.setItems(FXCollections.observableList(data));
         }
     }
 

@@ -11,10 +11,7 @@ import ru.dyakun.citnis.gui.page.PageBuilder;
 import ru.dyakun.citnis.gui.page.QueryPageBuilder;
 import ru.dyakun.citnis.gui.page.TableBuilder;
 import ru.dyakun.citnis.gui.query.*;
-import ru.dyakun.citnis.model.data.Payphone;
-import ru.dyakun.citnis.model.data.PhoneNumber;
-import ru.dyakun.citnis.model.data.PhoneOwner;
-import ru.dyakun.citnis.model.data.Subscriber;
+import ru.dyakun.citnis.model.data.*;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -40,8 +37,8 @@ public class MainScene implements Initializable {
                             .styleClass("query-table")
                             .stringCol("Фамилия", "lastname", 150)
                             .stringCol("Имя", "firstname", 150)
-                            .intCol("Возраст", "age", 50)
-                            .stringCol("Пол", "gender", 50)
+                            .intCol("Возраст", "age", 100)
+                            .stringCol("Пол", "gender", 100)
                             .build())
                 .title("Абоненты АТС");
         queryPages.add(atsSubscribersPage);
@@ -65,6 +62,17 @@ public class MainScene implements Initializable {
                         .build())
                 .title("Таксофоны");
         queryPages.add(payphonesPage);
+
+        var subscribersRatioPage = new QueryPageBuilder<>(new SubscribersRatioQuery())
+                .tableview(new TableBuilder<Ratio>()
+                        .styleClass("query-table")
+                        .intCol("АТС", "serial", 100)
+                        .stringCol("Район", "district", 150)
+                        .intCol("Льготники", "beneficiariesCount", 100)
+                        .intCol("Всего", "total", 100)
+                        .build())
+                .title("Соотношение абонентов");
+        queryPages.add(subscribersRatioPage);
 
         var parallelPhonesPage = new QueryPageBuilder<>(new ParallelPhonesQuery())
                 .tableview(new TableBuilder<PhoneOwner>()
@@ -93,8 +101,8 @@ public class MainScene implements Initializable {
                         .styleClass("query-table")
                         .stringCol("Фамилия", "lastname", 150)
                         .stringCol("Имя", "firstname", 150)
-                        .intCol("Возраст", "age", 50)
-                        .stringCol("Пол", "gender", 50)
+                        .intCol("Возраст", "age", 100)
+                        .stringCol("Пол", "gender", 100)
                         .build())
                 .title("Абоненты по номеру");
         queryPages.add(subscribersByPhonePage);

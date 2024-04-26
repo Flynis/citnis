@@ -8,7 +8,7 @@ import javafx.scene.control.cell.PropertyValueFactory;
 public class TableBuilder<T> {
 
     protected final TableView<T> tableView = new TableView<>();
-    protected final Label placeholderLabel = new Label("Ничего не найдено");
+    protected final Label placeholderLabel = new Label("");
 
     public TableBuilder() {
         tableView.setPlaceholder(placeholderLabel);
@@ -48,6 +48,7 @@ public class TableBuilder<T> {
     }
 
     public TableView<T> build() {
+        tableView.setPrefHeight(1000);
         return tableView;
     }
 

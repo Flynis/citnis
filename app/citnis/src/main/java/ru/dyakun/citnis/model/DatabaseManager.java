@@ -1,5 +1,7 @@
 package ru.dyakun.citnis.model;
 
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,6 +24,7 @@ public class DatabaseManager {
     private final String url;
     private final String user;
     private final String passwd;
+    private final BooleanProperty executingQuery = new SimpleBooleanProperty(false);
 
     private DatabaseManager() {
         Properties props = new Properties();
@@ -42,6 +45,7 @@ public class DatabaseManager {
     }
 
     public <T> List<T> executeQuery(String query, Mapper<T> mapper) {
+        executingQuery.set(true);
         logger.info("Executing query: \n{}", query);
         List<T> result = new ArrayList<>();
         try (Connection con = DriverManager.getConnection(url, user, passwd);
@@ -53,7 +57,16 @@ public class DatabaseManager {
         } catch (SQLException e) {
             logger.error("Database query execute failed", e);
         }
+        executingQuery.set(false);
         return result;
+    }
+
+    public boolean isExecutingQuery() {
+        return executingQuery.get();
+    }
+
+    public BooleanProperty executingQueryProperty() {
+        return executingQuery;
     }
 
 }

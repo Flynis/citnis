@@ -68,6 +68,11 @@
     -fx-border-color: gray;
 }
 
+.result-label {
+    -fx-font-size: 14px;
+    -fx-text-fill: #444444;
+}
+
 .form-btn {
     -fx-border-radius: 50;
     -fx-border-size: 4;
