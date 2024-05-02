@@ -5,11 +5,11 @@ import com.dlsc.formsfx.model.structure.Form;
 import com.dlsc.formsfx.model.structure.Group;
 import com.dlsc.formsfx.model.structure.SingleSelectionField;
 import ru.dyakun.citnis.model.Mapper;
-import ru.dyakun.citnis.model.Query;
-import ru.dyakun.citnis.model.SelectionStorage;
+import ru.dyakun.citnis.model.query.Query;
+import ru.dyakun.citnis.model.selection.SelectionStorage;
 import ru.dyakun.citnis.model.data.Payphone;
 
-import static ru.dyakun.citnis.model.SelectionUtil.convertNumberSortType;
+import static ru.dyakun.citnis.model.selection.SelectionUtil.convertNumberSortType;
 
 public class PayphonesQuery implements Query<Payphone> {
 

@@ -2,7 +2,7 @@ package ru.dyakun.citnis.gui.page;
 
 import javafx.scene.Node;
 import javafx.scene.control.TableView;
-import ru.dyakun.citnis.model.Query;
+import ru.dyakun.citnis.model.query.Query;
 
 public class QueryPageBuilder<T> extends PageBuilder {
 

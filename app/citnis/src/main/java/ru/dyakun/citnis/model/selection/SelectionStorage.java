@@ -1,11 +1,10 @@
-package ru.dyakun.citnis.model;
+package ru.dyakun.citnis.model.selection;
 
+import ru.dyakun.citnis.model.DatabaseManager;
+import ru.dyakun.citnis.model.Mapper;
 import ru.dyakun.citnis.model.data.Ats;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class SelectionStorage {
 
@@ -19,9 +18,10 @@ public class SelectionStorage {
 
     private Map<String, Ats> ats = new HashMap<>();
 
-    private final List<String> stringSort = List.of("от А до Я", "от Я до А");
-    private final List<String> numberSort = List.of("по возрастанию", "по убыванию");
-    private final List<String> atsType = List.of(notChosen, "Городская", "Учрежденческая", "Ведомственная");
+    private final List<String> stringSort = Arrays.stream(SortType.values()).map(SortType::getStringSortLabel).toList();
+    private final List<String> numberSort = Arrays.stream(SortType.values()).map(SortType::getNumberSortLabel).toList();
+    private final List<String> atsType = Arrays.stream(AtsType.values()).map(AtsType::getLabel).toList();
+    private final List<String> durations = Arrays.stream(Duration.values()).map(Duration::getLabel).toList();
     private final List<String> alphabet;
 
     private SelectionStorage() {
@@ -38,7 +38,7 @@ public class SelectionStorage {
 
     public void init() {
         DatabaseManager db = DatabaseManager.getInstance();
-
+        // TODO
         String atsQuery = """
                 SELECT serial_no, org_name FROM ats_with_org
                 \tORDER BY org_name;
@@ -117,6 +117,10 @@ public class SelectionStorage {
 
     public List<String> atsType() {
         return atsType;
+    }
+
+    public List<String> durations() {
+        return durations;
     }
 
     public List<String> alphabet() {

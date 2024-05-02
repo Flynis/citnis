@@ -5,11 +5,11 @@ import com.dlsc.formsfx.model.validators.CustomValidator;
 import com.dlsc.formsfx.model.validators.StringLengthValidator;
 import com.dlsc.formsfx.model.validators.Validator;
 import ru.dyakun.citnis.model.Mapper;
-import ru.dyakun.citnis.model.Query;
-import ru.dyakun.citnis.model.SelectionStorage;
+import ru.dyakun.citnis.model.query.Query;
+import ru.dyakun.citnis.model.selection.SelectionStorage;
 import ru.dyakun.citnis.model.data.PhoneNumber;
 
-import static ru.dyakun.citnis.model.SelectionUtil.convertNumberSortType;
+import static ru.dyakun.citnis.model.selection.SelectionUtil.convertNumberSortType;
 
 public class PhoneByAddressQuery implements Query<PhoneNumber> {
 

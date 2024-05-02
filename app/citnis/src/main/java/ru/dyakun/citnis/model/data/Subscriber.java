@@ -1,24 +1,44 @@
 package ru.dyakun.citnis.model.data;
 
-import javafx.beans.property.IntegerProperty;
-import javafx.beans.property.SimpleIntegerProperty;
-import javafx.beans.property.SimpleStringProperty;
-import javafx.beans.property.StringProperty;
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.*;
 
 public class Subscriber {
 
-    private final StringProperty lastname;
-    private final StringProperty firstname;
-    private final StringProperty surname;
-    private final IntegerProperty age;
-    private final StringProperty gender;
+    protected final StringProperty lastname = new SimpleStringProperty();
+    protected final StringProperty firstname = new SimpleStringProperty();
+    protected final StringProperty surname = new SimpleStringProperty();
+    protected final IntegerProperty age = new SimpleIntegerProperty();
+    protected final StringProperty gender = new SimpleStringProperty();
+    protected final DoubleProperty benefit = new SimpleDoubleProperty();
+    protected final BooleanProperty isBeneficiary = new SimpleBooleanProperty(false);
 
-    public Subscriber(String lastname, String firstname, String surname, int age, String gender) {
-        this.lastname = new SimpleStringProperty(lastname);
-        this.firstname = new SimpleStringProperty(firstname);
-        this.surname = new SimpleStringProperty(surname);
-        this.age = new SimpleIntegerProperty(age);
-        this.gender = new SimpleStringProperty(gender);
+    public Subscriber() {
+        isBeneficiary.bind(Bindings.greaterThan(0.5, benefit));
+    }
+
+    public void setLastname(String lastname) {
+        this.lastname.set(lastname);
+    }
+
+    public void setFirstname(String firstname) {
+        this.firstname.set(firstname);
+    }
+
+    public void setSurname(String surname) {
+        this.surname.set(surname);
+    }
+
+    public void setAge(int age) {
+        this.age.set(age);
+    }
+
+    public void setGender(String gender) {
+        this.gender.set(gender);
+    }
+
+    public void setBenefit(double benefit) {
+        this.benefit.set(benefit);
     }
 
     public String getFirstname() {
@@ -59,6 +79,22 @@ public class Subscriber {
 
     public StringProperty genderProperty() {
         return gender;
+    }
+
+    public double getBenefit() {
+        return benefit.get();
+    }
+
+    public DoubleProperty benefitProperty() {
+        return benefit;
+    }
+
+    public boolean isIsBeneficiary() {
+        return isBeneficiary.get();
+    }
+
+    public BooleanProperty isBeneficiaryProperty() {
+        return isBeneficiary;
     }
 
 }

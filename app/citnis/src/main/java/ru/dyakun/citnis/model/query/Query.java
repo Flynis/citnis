@@ -1,6 +1,7 @@
-package ru.dyakun.citnis.model;
+package ru.dyakun.citnis.model.query;
 
 import com.dlsc.formsfx.model.structure.Form;
+import ru.dyakun.citnis.model.Mapper;
 
 public interface Query<T> {
 
