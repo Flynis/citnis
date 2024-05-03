@@ -14,4 +14,8 @@ public class Selections {
         return Duration.fromLabel(duration) == Duration.ANY;
     }
 
+    public static int toInt(boolean v) {
+        return v ? 1 : 0;
+    }
+
 }

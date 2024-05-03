@@ -6,10 +6,12 @@ import com.dlsc.formsfx.model.validators.IntegerRangeValidator;
 import com.dlsc.formsfx.model.validators.Validator;
 import ru.dyakun.citnis.model.Mapper;
 import ru.dyakun.citnis.model.query.Query;
+import ru.dyakun.citnis.model.query.QueryStringBuilder;
 import ru.dyakun.citnis.model.selection.SelectionStorage;
 import ru.dyakun.citnis.model.data.Subscriber;
-import ru.dyakun.citnis.model.selection.Selections;
 import ru.dyakun.citnis.model.selection.SortType;
+
+import static ru.dyakun.citnis.model.selection.Selections.*;
 
 public class AtsSubscribersQuery implements Query<Subscriber> {
 
@@ -74,6 +76,14 @@ public class AtsSubscribersQuery implements Query<Subscriber> {
         };
     }
 
+    public int getConditionsCount() {
+        int count = 0;
+        count +=  toInt(isChosen(ats.getSelection()));
+        count += 2; // age from and age to
+        count += toInt(onlyBeneficiaries.getValue());
+        return count;
+    }
+
     @Override
     public Form getForm() {
         return form;
@@ -82,10 +92,16 @@ public class AtsSubscribersQuery implements Query<Subscriber> {
     @Override
     public String getQuery() {
         SelectionStorage storage = SelectionStorage.getInstance();
-        StringBuilder builder = new StringBuilder("SELECT last_name, first_name, surname, gender, age, benefit\n");
+
+        QueryStringBuilder query = new QueryStringBuilder()
+                .select("last_name, first_name, surname, gender, age, benefit")
+                .from("ats_subscribers")
+                .where(getConditionsCount())
+                .and(isChosen(ats.getSelection()), )
+        StringBuilder builder = new StringBuilder("SELECT \n");
         builder.append("\tFROM ats_subscribers\n");
         builder.append(String.format("\tWHERE (age >= %d) AND (age <= %d)\n", ageFrom.getValue(), ageTo.getValue()));
-        if(Selections.isChosen(ats.getSelection())) {
+        if(isChosen(ats.getSelection())) {
             String atsSerial = storage.getAtsByName(ats.getSelection()).getSerial();
             builder.append(String.format("\t\tAND (serial_no = '%s')\n", atsSerial));
         }
