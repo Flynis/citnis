@@ -1,19 +1,16 @@
-package ru.dyakun.citnis.gui.query;
+package ru.dyakun.citnis.model.query;
 
 import com.dlsc.formsfx.model.structure.*;
 import com.dlsc.formsfx.model.validators.CustomValidator;
 import com.dlsc.formsfx.model.validators.IntegerRangeValidator;
 import com.dlsc.formsfx.model.validators.Validator;
-import ru.dyakun.citnis.model.Mapper;
-import ru.dyakun.citnis.model.query.Query;
-import ru.dyakun.citnis.model.query.QueryStringBuilder;
 import ru.dyakun.citnis.model.selection.SelectionStorage;
 import ru.dyakun.citnis.model.data.Subscriber;
 import ru.dyakun.citnis.model.selection.SortType;
 
 import static ru.dyakun.citnis.model.selection.Selections.*;
 
-public class AtsSubscribersQuery implements Query<Subscriber> {
+public class SubscribersListQuery extends QueryBase<Subscriber> {
 
     private final SingleSelectionField<String> ats;
     private final BooleanField onlyBeneficiaries;
@@ -22,10 +19,7 @@ public class AtsSubscribersQuery implements Query<Subscriber> {
     private final SingleSelectionField<String> firstLastNameChar; // TODO
     private final SingleSelectionField<String> stringSortType;
 
-    private final Form form;
-    private final Mapper<Subscriber> mapper;
-
-    public AtsSubscribersQuery() {
+    public SubscribersListQuery() {
         SelectionStorage selection = SelectionStorage.getInstance();
 
         ats = Field
@@ -76,46 +70,37 @@ public class AtsSubscribersQuery implements Query<Subscriber> {
         };
     }
 
-    public int getConditionsCount() {
+    private int getConditionsCount() {
         int count = 0;
-        count +=  toInt(isChosen(ats.getSelection()));
+        count += toInt(isChosen(ats.getSelection()));
         count += 2; // age from and age to
         count += toInt(onlyBeneficiaries.getValue());
         return count;
     }
 
     @Override
-    public Form getForm() {
-        return form;
-    }
-
-    @Override
     public String getQuery() {
         SelectionStorage storage = SelectionStorage.getInstance();
+
+        String atsSerial = storage.getAtsByName(ats.getSelection()).getSerial();
+        String sqlSort = SortType.fromStringSortType(stringSortType.getSelection()).getSqlSortType();
 
         QueryStringBuilder query = new QueryStringBuilder()
                 .select("last_name, first_name, surname, gender, age, benefit")
                 .from("ats_subscribers")
                 .where(getConditionsCount())
-                .and(isChosen(ats.getSelection()), )
-        StringBuilder builder = new StringBuilder("SELECT \n");
-        builder.append("\tFROM ats_subscribers\n");
-        builder.append(String.format("\tWHERE (age >= %d) AND (age <= %d)\n", ageFrom.getValue(), ageTo.getValue()));
-        if(isChosen(ats.getSelection())) {
-            String atsSerial = storage.getAtsByName(ats.getSelection()).getSerial();
-            builder.append(String.format("\t\tAND (serial_no = '%s')\n", atsSerial));
-        }
-        if(onlyBeneficiaries.getValue()) {
-            builder.append("\t\tAND (benefit >= 0.5)\n");
-        }
-        String sqlSort = SortType.fromStringSortType(stringSortType.getSelection()).getSqlSortType();
-        builder.append(String.format("\tORDER BY last_name %s;\n", sqlSort));
-        return builder.toString();
+                .and(isChosen(ats.getSelection()), "(serial_no = '%s')", atsSerial)
+                .and(true, "(age >= %d)", ageFrom.getValue())
+                .and(true, "(age <= %d)", ageTo.getValue())
+                .and(onlyBeneficiaries.getValue(), "(benefit >= 0.5)")
+                .orderBy("last_name", sqlSort);
+        return query.toString();
     }
 
     @Override
-    public Mapper<Subscriber> getMapper() {
-        return mapper;
+    public void onUpdate() {
+        SelectionStorage selection = SelectionStorage.getInstance();
+        ats.items(selection.ats());
     }
 
 }

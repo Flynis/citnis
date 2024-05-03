@@ -1,14 +1,14 @@
-package ru.dyakun.citnis.gui.query;
+package ru.dyakun.citnis.model.query;
 
 import com.dlsc.formsfx.model.structure.*;
-import ru.dyakun.citnis.model.Mapper;
-import ru.dyakun.citnis.model.query.Query;
 import ru.dyakun.citnis.model.data.Debtor;
+import ru.dyakun.citnis.model.selection.Duration;
 import ru.dyakun.citnis.model.selection.SelectionStorage;
-import ru.dyakun.citnis.model.selection.Selections;
 import ru.dyakun.citnis.model.selection.SortType;
 
-public class DebtorsQuery implements Query<Debtor> {
+import static ru.dyakun.citnis.model.selection.Selections.*;
+
+public class DebtorsListQuery extends QueryBase<Debtor> {
 
     private final SingleSelectionField<String> ats;
     private final SingleSelectionField<String> district;
@@ -17,10 +17,7 @@ public class DebtorsQuery implements Query<Debtor> {
     private final BooleanField intercity;
     private final SingleSelectionField<String> stringSortType;
 
-    private final Form form;
-    private final Mapper<Debtor> mapper;
-
-    public DebtorsQuery() {
+    public DebtorsListQuery() {
         SelectionStorage selection = SelectionStorage.getInstance();
 
         ats = Field
@@ -52,45 +49,47 @@ public class DebtorsQuery implements Query<Debtor> {
             var debtor =  new Debtor();
             debtor.setLastname(rs.getString("last_name"));
             debtor.setFirstname(rs.getString("first_name"));
+            debtor.setDebt(rs.getDouble("debt_amount"));
             return debtor;
         };
     }
 
-    @Override
-    public Form getForm() {
-        return form;
-    }
-
-    private boolean needWhereClause() {
-        return Selections.isChosen(ats.getSelection()) ||
-                Selections.isChosen(district.getSelection()) ||
-                Selections.isAnyDuration(debtDuration.getSelection()) ||
-                subscriptionFee.getValue() ||
-                intercity.getValue();
+    private int getConditionsCount() {
+        int count = 0;
+        count += toInt(isChosen(ats.getSelection()));
+        count += toInt(isChosen(district.getSelection()));
+        count += toInt(!isAnyDuration(debtDuration.getSelection()));
+        count += toInt(subscriptionFee.getValue());
+        count += toInt(intercity.getValue());
+        return count;
     }
 
     @Override
     public String getQuery() {
         SelectionStorage storage = SelectionStorage.getInstance();
-        StringBuilder builder = new StringBuilder("SELECT last_name, first_name\n");
-        builder.append("\tFROM debtors\n");
 
-        builder.append(String.format("\tWHERE (age >= %d) AND (age <= %d)\n", ageFrom.getValue(), ageTo.getValue()));
-        if(!ats.getSelection().equals(SelectionStorage.notChosen)) {
-            String atsSerial = storage.getAtsByName(ats.getSelection()).getSerial();
-            builder.append(String.format("\t\tAND (serial_no = '%s')\n", atsSerial));
-        }
-        if(onlyBeneficiaries.getValue()) {
-            builder.append("\t\tAND (benefit >= 0.5)\n");
-        }
+        String atsSerial = storage.getAtsByName(ats.getSelection()).getSerial();
         String sqlSort = SortType.fromStringSortType(stringSortType.getSelection()).getSqlSortType();
-        builder.append(String.format("\tORDER BY last_name %s;\n", sqlSort));
-        return builder.toString();
+        int duration = Duration.asInt(Duration.fromLabel(debtDuration.getSelection()));
+
+        QueryStringBuilder query = new QueryStringBuilder()
+                .select("last_name, first_name, debt_amount")
+                .from("debtors")
+                .where(getConditionsCount())
+                .and(isChosen(ats.getSelection()), "(serial_no = '%s')", atsSerial)
+                .and(isChosen(district.getSelection()), "(district_name = '%s')", district.getSelection())
+                .and(!isAnyDuration(debtDuration.getSelection()), "(debt_duration >= %d)", duration)
+                .and(subscriptionFee.getValue(), "(service_name = 'Звонок')")
+                .and(intercity.getValue(), "(service_name = 'Междугородний звонок')")
+                .orderBy("last_name", sqlSort);
+        return query.toString();
     }
 
     @Override
-    public Mapper<Debtor> getMapper() {
-        return mapper;
+    public void onUpdate() {
+        SelectionStorage storage = SelectionStorage.getInstance();
+        ats.items(storage.ats());
+        district.items(storage.districts());
     }
 
 }

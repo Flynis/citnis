@@ -1,13 +1,18 @@
 package ru.dyakun.citnis.model.selection;
 
-import ru.dyakun.citnis.model.DatabaseManager;
-import ru.dyakun.citnis.model.Mapper;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import ru.dyakun.citnis.model.db.DatabaseManager;
+import ru.dyakun.citnis.model.db.Scheduler;
+import ru.dyakun.citnis.model.db.UpdateListener;
+import ru.dyakun.citnis.model.query.Mapper;
 import ru.dyakun.citnis.model.data.Ats;
 
 import java.util.*;
 
 public class SelectionStorage {
 
+    private static final Logger logger = LoggerFactory.getLogger(SelectionStorage.class);
     private static final SelectionStorage instance = new SelectionStorage();
     public static final String notChosen = "Не выбрано";
 
@@ -24,6 +29,8 @@ public class SelectionStorage {
     private final List<String> durations = Arrays.stream(Duration.values()).map(Duration::getLabel).toList();
     private final List<String> alphabet;
 
+    private final List<UpdateListener> listeners = new ArrayList<>();
+
     private SelectionStorage() {
         alphabet = new ArrayList<>();
         alphabet.add(notChosen);
@@ -32,59 +39,85 @@ public class SelectionStorage {
         }
     }
 
+    public void addUpdateListener(UpdateListener listener) {
+        listeners.add(listener);
+    }
+
+    public void notifyListeners() {
+        for(var listener: listeners) {
+            listener.onUpdate();
+        }
+    }
+
     public static SelectionStorage getInstance() {
         return instance;
     }
 
     public void init() {
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                update();
+            }
+        };
+        Scheduler.getInstance().schedule(task, 5 * 60 * 1000); // period 5 min
+    }
+
+    private void update() {
+        logger.info("Updating selection data");
         DatabaseManager db = DatabaseManager.getInstance();
-        // TODO
-        String atsQuery = """
+
+        String query = """
                 SELECT serial_no, org_name FROM ats_with_org
                 \tORDER BY org_name;
+                
+                SELECT serial_no, org_name FROM ats_owners
+                \tJOIN city_ats USING(ats_id)
+                \tORDER BY org_name;
+                
+                SELECT district_name FROM current_city
+                \tGROUP BY district_name;
+                
+                SELECT street_name FROM current_city
+                \tGROUP BY street_name;
                 """;
+
         Mapper<Ats> atsMapper = rs -> new Ats(
                 rs.getString("serial_no"),
                 rs.getString("org_name")
         );
-        var atsWithOrgList = db.executeQuery(atsQuery, atsMapper);
+        Mapper<Ats> cityAtsMapper = rs -> new Ats(
+                rs.getString("serial_no"),
+                rs.getString("org_name")
+        );
+        Mapper<String> districtNameMapper = rs -> rs.getString("district_name");
+        Mapper<String> streetNameMapper = rs -> rs.getString("street_name");
+
+        var res = db.executeMultipleQueries(query, List.of(atsMapper, cityAtsMapper, districtNameMapper, streetNameMapper));
+
+        ats = new HashMap<>();
         atsNames = new ArrayList<>();
         atsNames.add(notChosen);
-        for(var a: atsWithOrgList) {
+        for(var a: res.get(atsMapper)) {
             var atsName = a.toString();
             atsNames.add(atsName);
-            ats.put(atsName, a);
+            ats.put(atsName, (Ats) a);
         }
 
-        String cityAtsQuery = """
-                SELECT serial_no, org_name FROM ats_with_org
-                \tJOIN city_ats USING(ats_id)
-                \tORDER BY org_name;
-                """;
-        var cityAtsList = db.executeQuery(cityAtsQuery, atsMapper);
         cityAtsNames = new ArrayList<>();
         cityAtsNames.add(notChosen);
-        for(var a: cityAtsList) {
+        for(var a: res.get(cityAtsMapper)) {
             cityAtsNames.add(a.toString());
         }
 
-        String districtsQuery = """
-                SELECT district_name FROM current_city
-                \tGROUP BY district_name;
-                """;
-        Mapper<String> districtNameMapper = rs -> rs.getString("district_name");
         districts = new ArrayList<>();
         districts.add(notChosen);
-        districts.addAll(db.executeQuery(districtsQuery, districtNameMapper));
+        districts.addAll((Collection<? extends String>) res.get(districtNameMapper));
 
-        String streetsQuery = """
-                SELECT street_name FROM current_city
-                \tGROUP BY street_name;
-                """;
-        Mapper<String> streetNameMapper = rs -> rs.getString("street_name");
         streets = new ArrayList<>();
         streets.add(notChosen);
-        streets.addAll(db.executeQuery(streetsQuery, streetNameMapper));
+        streets.addAll((Collection<? extends String>) res.get(streetNameMapper));
+        notifyListeners();
     }
 
     public Ats getAtsByName(String name) {

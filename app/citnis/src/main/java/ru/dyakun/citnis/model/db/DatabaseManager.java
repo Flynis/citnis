@@ -1,9 +1,8 @@
-package ru.dyakun.citnis.model;
+package ru.dyakun.citnis.model.db;
 
-import javafx.beans.property.BooleanProperty;
-import javafx.beans.property.SimpleBooleanProperty;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.dyakun.citnis.model.query.Mapper;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -11,10 +10,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Properties;
+import java.util.*;
 
 public class DatabaseManager {
 
@@ -24,7 +20,6 @@ public class DatabaseManager {
     private final String url;
     private final String user;
     private final String passwd;
-    private final BooleanProperty executingQuery = new SimpleBooleanProperty(false);
 
     private DatabaseManager() {
         Properties props = new Properties();
@@ -45,7 +40,6 @@ public class DatabaseManager {
     }
 
     public <T> List<T> executeQuery(String query, Mapper<T> mapper) {
-        executingQuery.set(true);
         logger.info("Executing query: \n{}", query);
         List<T> result = new ArrayList<>();
         try (Connection con = DriverManager.getConnection(url, user, passwd);
@@ -57,16 +51,36 @@ public class DatabaseManager {
         } catch (SQLException e) {
             logger.error("Database query execute failed", e);
         }
-        executingQuery.set(false);
         return result;
     }
 
-    public boolean isExecutingQuery() {
-        return executingQuery.get();
+    public Map<Mapper<?>, List<?>> executeMultipleQueries(String query, List<Mapper<?>> mappers) {
+        logger.info("Executing multiple queries: \n{}", query);
+        Map<Mapper<?>, List<?>> res = new HashMap<>();
+        try (Connection con = DriverManager.getConnection(url, user, passwd);
+             PreparedStatement pst = con.prepareStatement(query)) {
+            int i = 0;
+            boolean isResult;
+            do {
+                try (ResultSet rs = pst.getResultSet()) {
+                    var list = readResultSet(rs, mappers.get(i));
+                    res.put(mappers.get(i), list);
+                    isResult = pst.getMoreResults();
+                    i++;
+                }
+            } while (isResult && i < mappers.size());
+        } catch (SQLException e) {
+            logger.error("Database multiple queries execute failed", e);
+        }
+        return res;
     }
 
-    public BooleanProperty executingQueryProperty() {
-        return executingQuery;
+    private <T> List<T> readResultSet(ResultSet rs, Mapper<T> mapper) throws SQLException {
+        List<T> result = new ArrayList<>();
+        while (rs.next()) {
+            result.add(mapper.map(rs));
+        }
+        return result;
     }
 
 }

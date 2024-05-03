@@ -26,11 +26,13 @@ public class QueryStringBuilder {
             throw new IllegalArgumentException("Conditions count must be >= 0");
         }
         this.conditionsCount = conditionsCount;
-        builder.append("\tWHERE ");
+        if(conditionsCount > 0) {
+            builder.append("\tWHERE ");
+        }
         return this;
     }
 
-    public QueryStringBuilder and(boolean needToInsert, String cond) {
+    public QueryStringBuilder and(boolean needToInsert, String format, Object... args) {
         if(needToInsert) {
             conditionsCount--;
             if(isFirstCond) {
@@ -38,7 +40,7 @@ public class QueryStringBuilder {
             } else {
                 builder.append("\t\t");
             }
-            builder.append(cond);
+            builder.append(String.format(format, args));
             if(conditionsCount != 0) {
                 builder.append(" AND");
             }
@@ -52,7 +54,8 @@ public class QueryStringBuilder {
         return this;
     }
 
-    public String build() {
+    @Override
+    public String toString() {
         return builder.toString();
     }
 

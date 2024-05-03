@@ -1,9 +1,10 @@
-package ru.dyakun.citnis.gui.page;
+package ru.dyakun.citnis.gui.component;
 
 import com.dlsc.formsfx.model.structure.Form;
 import com.dlsc.formsfx.view.renderer.FormRenderer;
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
+import javafx.scene.Node;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.ScrollPane;
@@ -11,22 +12,25 @@ import javafx.scene.control.TableView;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
-import ru.dyakun.citnis.model.DatabaseManager;
+import ru.dyakun.citnis.model.db.DatabaseManager;
 import ru.dyakun.citnis.model.query.Query;
 
-public class QueryPage<T> extends BorderPane {
+public class QueryPage<T> extends Page {
 
+    private final BorderPane pane;
     private final Query<T> query;
     private final Button okBtn;
     private final TableView<T> tableView;
     private final Label resultLabel;
 
     public QueryPage(String title, Query<T> query, TableView<T> tableView) {
+        super(title);
         this.query = query;
         this.tableView = tableView;
+        pane = new BorderPane();
 
-        setPrefHeight(Double.POSITIVE_INFINITY);
-        setPrefWidth(Double.POSITIVE_INFINITY);
+        pane.setPrefHeight(Double.POSITIVE_INFINITY);
+        pane.setPrefWidth(Double.POSITIVE_INFINITY);
 
         Label pageTitle = new Label(title);
         pageTitle.getStyleClass().add("page-title");
@@ -80,8 +84,8 @@ public class QueryPage<T> extends BorderPane {
         scrollPane.setFitToWidth(true);
         scrollPane.setContent(contentArea);
 
-        setTop(pageHeader);
-        setCenter(scrollPane);
+        pane.setTop(pageHeader);
+        pane.setCenter(scrollPane);
         setEventHandlers();
     }
 
@@ -112,6 +116,11 @@ public class QueryPage<T> extends BorderPane {
             setResultLabelText(data.size());
             tableView.setItems(FXCollections.observableList(data));
         }
+    }
+
+    @Override
+    public Node getNode() {
+        return pane;
     }
 
 }

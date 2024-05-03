@@ -1,16 +1,21 @@
-package ru.dyakun.citnis.gui.page;
+package ru.dyakun.citnis.gui.component;
 
-import javafx.scene.Node;
 import javafx.scene.control.TableView;
 import ru.dyakun.citnis.model.query.Query;
 
-public class QueryPageBuilder<T> extends PageBuilder {
+public class QueryPageBuilder<T> {
 
-    protected final Query<T> query;
-    protected TableView<T> tableView = new TableView<>();
+    private String title = "";
+    private final Query<T> query;
+    private TableView<T> tableView = new TableView<>();
 
     public QueryPageBuilder(Query<T> query) {
         this.query = query;
+    }
+
+    public QueryPageBuilder<T> title(String title) {
+        this.title = title;
+        return this;
     }
 
     public QueryPageBuilder<T> tableview(TableView<T> tableView) {
@@ -18,8 +23,7 @@ public class QueryPageBuilder<T> extends PageBuilder {
         return this;
     }
 
-    @Override
-    public Node build() {
+    public Page build() {
         return new QueryPage<>(title, query, tableView);
     }
 

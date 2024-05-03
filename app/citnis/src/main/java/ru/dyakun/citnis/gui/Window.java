@@ -9,7 +9,7 @@ import javafx.scene.image.Image;
 import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.dyakun.citnis.model.DatabaseManager;
+import ru.dyakun.citnis.model.db.DatabaseManager;
 
 import java.io.IOException;
 import java.io.InputStream;

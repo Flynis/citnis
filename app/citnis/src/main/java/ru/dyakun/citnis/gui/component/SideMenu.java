@@ -7,7 +7,6 @@ import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import ru.dyakun.citnis.gui.page.PageBuilder;
 
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +25,7 @@ public class SideMenu {
         this.sidebar = sidebar;
     }
 
-    public void addPages(String title, List<PageBuilder> pageBuilders) {
+    public void addPages(String title, List<Page> pageBuilders) {
         Label label = new Label(title);
         label.getStyleClass().add("side-label");
 
@@ -39,7 +38,7 @@ public class SideMenu {
         buttonBox.getStyleClass().add("side-menu");
 
         for(var page: pageBuilders) {
-            pages.put(page.getId(), page.build());
+            pages.put(page.getId(), page.getNode());
 
             JFXButton button = new JFXButton(page.getTitle());
             button.getStyleClass().add("side-btn");

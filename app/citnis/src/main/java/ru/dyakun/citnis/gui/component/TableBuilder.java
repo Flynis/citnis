@@ -1,4 +1,4 @@
-package ru.dyakun.citnis.gui.page;
+package ru.dyakun.citnis.gui.component;
 
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
@@ -33,6 +33,14 @@ public class TableBuilder<T> {
 
     public TableBuilder<T> intCol(String name, String binding, int prefWidth) {
         TableColumn<T, Integer> column = new TableColumn<>(name);
+        column.setCellValueFactory(new PropertyValueFactory<>(binding));
+        tableView.getColumns().add(column);
+        initCol(column, prefWidth);
+        return this;
+    }
+
+    public TableBuilder<T> doubleCol(String name, String binding, int prefWidth) {
+        TableColumn<T, Double> column = new TableColumn<>(name);
         column.setCellValueFactory(new PropertyValueFactory<>(binding));
         tableView.getColumns().add(column);
         initCol(column, prefWidth);

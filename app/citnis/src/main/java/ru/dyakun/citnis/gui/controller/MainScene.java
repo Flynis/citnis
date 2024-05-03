@@ -4,14 +4,12 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import ru.dyakun.citnis.gui.component.Page;
 import ru.dyakun.citnis.gui.component.SideMenu;
-import ru.dyakun.citnis.gui.page.PageBuilder;
-import ru.dyakun.citnis.gui.page.QueryPageBuilder;
-import ru.dyakun.citnis.gui.page.TableBuilder;
-import ru.dyakun.citnis.gui.query.*;
+import ru.dyakun.citnis.gui.component.QueryPageBuilder;
+import ru.dyakun.citnis.gui.component.TableBuilder;
 import ru.dyakun.citnis.model.data.*;
+import ru.dyakun.citnis.model.query.*;
 
 import java.net.URL;
 import java.util.ArrayList;
@@ -19,7 +17,6 @@ import java.util.List;
 import java.util.ResourceBundle;
 
 public class MainScene implements Initializable {
-    private static final Logger logger = LoggerFactory.getLogger(MainScene.class);
 
     @FXML
     public VBox sidebar;
@@ -30,9 +27,9 @@ public class MainScene implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         SideMenu sideMenu = new SideMenu(contentArea, sidebar);
-        List<PageBuilder> queryPages = new ArrayList<>();
+        List<Page> queryPages = new ArrayList<>();
 
-        var atsSubscribersPage = new QueryPageBuilder<>(new AtsSubscribersQuery())
+        var subscribersListPage = new QueryPageBuilder<>(new SubscribersListQuery())
                 .tableview(new TableBuilder<Subscriber>()
                             .styleClass("query-table")
                             .stringCol("Фамилия", "lastname", 150)
@@ -40,8 +37,8 @@ public class MainScene implements Initializable {
                             .intCol("Возраст", "age", 100)
                             .stringCol("Пол", "gender", 100)
                             .build())
-                .title("Абоненты АТС");
-        queryPages.add(atsSubscribersPage);
+                .title("Список абонентов");
+        queryPages.add(subscribersListPage.build());
 
         var freePhoneNumbersPage = new QueryPageBuilder<>(new FreePhoneNumbersQuery())
                 .tableview(new TableBuilder<PhoneNumber>()
@@ -50,41 +47,50 @@ public class MainScene implements Initializable {
                         .stringCol("Улица", "street", 150)
                         .intCol("Дом", "house", 50)
                         .build())
-                .title("Свободные номеры");
-        queryPages.add(freePhoneNumbersPage);
+                .title("Свободные номера");
+        queryPages.add(freePhoneNumbersPage.build());
 
-        var payphonesPage = new QueryPageBuilder<>(new PayphonesQuery())
+        var debtorsListPage = new QueryPageBuilder<>(new DebtorsListQuery())
+                .tableview(new TableBuilder<Debtor>()
+                        .styleClass("query-table")
+                        .stringCol("Фамилия", "lastname", 150)
+                        .stringCol("Имя", "firstname", 150)
+                        .doubleCol("Задолжность", "debt", 150)
+                        .build())
+                .title("Список должников");
+        queryPages.add(debtorsListPage.build());
+
+        var payphonesPage = new QueryPageBuilder<>(new PayphonesListQuery())
                 .tableview(new TableBuilder<Payphone>()
                         .styleClass("query-table")
                         .intCol("Номер", "number", 100)
                         .stringCol("Улица", "street", 150)
                         .intCol("Дом", "house", 50)
                         .build())
-                .title("Таксофоны");
-        queryPages.add(payphonesPage);
+                .title("Список таксофонов");
+        queryPages.add(payphonesPage.build());
 
-        var subscribersRatioPage = new QueryPageBuilder<>(new SubscribersRatioQuery())
-                .tableview(new TableBuilder<Ratio>()
+        var subscribersStatPage = new QueryPageBuilder<>(new SubscribersStatQuery())
+                .tableview(new TableBuilder<SubscribersStat>()
                         .styleClass("query-table")
                         .intCol("АТС", "serial", 100)
                         .stringCol("Район", "district", 150)
+                        .doubleCol("Процент льготников", "percent", 200)
                         .intCol("Льготники", "beneficiariesCount", 100)
                         .intCol("Всего", "total", 100)
                         .build())
                 .title("Соотношение абонентов");
-        queryPages.add(subscribersRatioPage);
+        queryPages.add(subscribersStatPage.build());
 
-        var parallelPhonesPage = new QueryPageBuilder<>(new ParallelPhonesQuery())
+        var parallelPhoneOwnersListPage = new QueryPageBuilder<>(new ParallelPhoneOwnersListQuery())
                 .tableview(new TableBuilder<PhoneOwner>()
                         .styleClass("query-table")
                         .stringCol("Фамилия", "lastname", 150)
                         .stringCol("Имя", "firstname", 150)
-                        .intCol("Номер", "number", 100)
-                        .stringCol("Улица", "street", 150)
-                        .intCol("Дом", "house", 50)
+                        .intCol("Номер телефона", "number", 100)
                         .build())
                 .title("Параллельные телефоны");
-        queryPages.add(parallelPhonesPage);
+        queryPages.add(parallelPhoneOwnersListPage.build());
 
         var phoneNumberByAddressPage = new QueryPageBuilder<>(new PhoneByAddressQuery())
                 .tableview(new TableBuilder<PhoneNumber>()
@@ -94,18 +100,16 @@ public class MainScene implements Initializable {
                         .intCol("Дом", "house", 50)
                         .build())
                 .title("Телефоны по адресу");
-        queryPages.add(phoneNumberByAddressPage);
+        queryPages.add(phoneNumberByAddressPage.build());
 
         var subscribersByPhonePage = new QueryPageBuilder<>(new SubscribersByPhoneQuery())
                 .tableview(new TableBuilder<Subscriber>()
                         .styleClass("query-table")
                         .stringCol("Фамилия", "lastname", 150)
                         .stringCol("Имя", "firstname", 150)
-                        .intCol("Возраст", "age", 100)
-                        .stringCol("Пол", "gender", 100)
                         .build())
                 .title("Абоненты по номеру");
-        queryPages.add(subscribersByPhonePage);
+        queryPages.add(subscribersByPhonePage.build());
 
         var pairedPhonesForReplacementPage = new QueryPageBuilder<>(new PairedPhonesForReplacementQuery())
                 .tableview(new TableBuilder<PhoneNumber>()
@@ -115,7 +119,7 @@ public class MainScene implements Initializable {
                         .intCol("Дом", "house", 50)
                         .build())
                 .title("Спаренные телефоны под замену");
-        queryPages.add(pairedPhonesForReplacementPage);
+        queryPages.add(pairedPhonesForReplacementPage.build());
 
         sideMenu.addPages("Запросы", queryPages);
         sideMenu.setCurrent(0);
