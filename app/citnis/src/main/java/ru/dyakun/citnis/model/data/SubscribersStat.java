@@ -1,22 +1,26 @@
 package ru.dyakun.citnis.model.data;
 
-import javafx.beans.binding.Bindings;
+import javafx.beans.binding.DoubleBinding;
 import javafx.beans.property.*;
 
 public class SubscribersStat {
 
-    private final StringProperty serial = new SimpleStringProperty();
     private final StringProperty district = new SimpleStringProperty();
     private final DoubleProperty percent = new SimpleDoubleProperty();
-    private final IntegerProperty beneficiariesCount = new SimpleIntegerProperty(1);
-    private final IntegerProperty total = new SimpleIntegerProperty(1);
+    private final IntegerProperty beneficiariesCount = new SimpleIntegerProperty();
+    private final IntegerProperty total = new SimpleIntegerProperty();
 
     public SubscribersStat() {
-        percent.bind(Bindings.multiply(100, Bindings.divide(total, beneficiariesCount)));
-    }
-
-    public void setSerial(String serial) {
-        this.serial.set(serial);
+        percent.bind(new DoubleBinding() {
+            {
+                super.bind(beneficiariesCount);
+                super.bind(total);
+            }
+            @Override
+            protected double computeValue() {
+                return (total.get() == 0) ? 0 : 100 * beneficiariesCount.get() / (double) total.get();
+            }
+        });
     }
 
     public void setDistrict(String district) {
@@ -29,14 +33,6 @@ public class SubscribersStat {
 
     public void setTotal(int total) {
         this.total.set(total);
-    }
-
-    public String getSerial() {
-        return serial.get();
-    }
-
-    public StringProperty serialProperty() {
-        return serial;
     }
 
     public String getDistrict() {

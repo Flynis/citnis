@@ -7,6 +7,7 @@ import com.dlsc.formsfx.model.validators.Validator;
 import ru.dyakun.citnis.model.selection.SelectionStorage;
 import ru.dyakun.citnis.model.data.Subscriber;
 import ru.dyakun.citnis.model.selection.SortType;
+import ru.dyakun.citnis.model.sql.SelectQueryBuilder;
 
 public class SubscribersByPhoneQuery extends QueryBase<Subscriber> {
 
@@ -52,14 +53,14 @@ public class SubscribersByPhoneQuery extends QueryBase<Subscriber> {
 
     @Override
     public String getQuery() {
-        String sqlSort = SortType.fromStringSortType(stringSortType.getSelection()).getSqlSortType();
+        SortType sortType = SortType.fromStringSortType(stringSortType.getSelection());
 
-        QueryStringBuilder query = new QueryStringBuilder()
+        SelectQueryBuilder query = new SelectQueryBuilder()
                 .select("last_name, first_name")
                 .from("ats_subscribers")
                 .where(1)
                 .and(true, "(phone_no = %s)", number.getValue())
-                .orderBy("last_name", sqlSort);
+                .orderBy("last_name", sortType);
         return query.toString();
     }
 

@@ -8,6 +8,7 @@ import ru.dyakun.citnis.model.data.Ats;
 import ru.dyakun.citnis.model.selection.SelectionStorage;
 import ru.dyakun.citnis.model.data.SubscribersStat;
 import ru.dyakun.citnis.model.selection.SortType;
+import ru.dyakun.citnis.model.sql.SelectQueryBuilder;
 
 import static ru.dyakun.citnis.model.selection.Selections.isChosen;
 import static ru.dyakun.citnis.model.selection.Selections.toInt;
@@ -38,7 +39,6 @@ public class SubscribersStatQuery extends QueryBase<SubscribersStat> {
 
         mapper = rs -> {
             var stat = new SubscribersStat();
-            stat.setSerial(rs.getString("serial_no"));
             stat.setDistrict(rs.getString("district_name"));
             stat.setBeneficiariesCount(rs.getInt("beneficiaries_count"));
             stat.setTotal(rs.getInt("total_subscribers"));
@@ -59,16 +59,16 @@ public class SubscribersStatQuery extends QueryBase<SubscribersStat> {
 
         Ats a = storage.getAtsByName(ats.getSelection());
         String atsSerial = (a != null) ? a.getSerial() : "";
-        String sqlSort = SortType.fromStringSortType(stringSortType.getSelection()).getSqlSortType();
+        SortType sortType = SortType.fromStringSortType(stringSortType.getSelection());
 
         // TODO group by
-        QueryStringBuilder query = new QueryStringBuilder()
+        SelectQueryBuilder query = new SelectQueryBuilder()
                 .select("serial_no, district_name, beneficiaries_count, total_subscribers")
                 .from("ats_beneficiaries_count_by_district")
                 .where(getConditionsCount())
                 .and(isChosen(ats.getSelection()), "(serial_no = '%s')", atsSerial)
                 .and(isChosen(district.getSelection()), "(district_name = '%s')", district.getSelection())
-                .orderBy("serial_no", sqlSort);
+                .orderBy("serial_no", sortType);
         return query.toString();
     }
 

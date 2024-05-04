@@ -2,7 +2,6 @@ package ru.dyakun.citnis.model.db;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.dyakun.citnis.model.query.Mapper;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -52,6 +51,17 @@ public class DatabaseManager {
             logger.error("Database query execute failed", e);
         }
         return result;
+    }
+
+    public void executeOperation(String query) throws SQLException {
+        logger.info("Executing operation: \n{}", query);
+        try (Connection con = DriverManager.getConnection(url, user, passwd);
+             PreparedStatement pst = con.prepareStatement(query)) {
+            pst.executeUpdate();
+        } catch (SQLException e) {
+            logger.error("Database query execute failed", e);
+            throw e;
+        }
     }
 
     public Map<Mapper<?>, List<?>> executeMultipleQueries(String query, List<Mapper<?>> mappers) {

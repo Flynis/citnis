@@ -7,6 +7,7 @@ import com.dlsc.formsfx.model.structure.SingleSelectionField;
 import ru.dyakun.citnis.model.selection.SelectionStorage;
 import ru.dyakun.citnis.model.data.PhoneNumber;
 import ru.dyakun.citnis.model.selection.SortType;
+import ru.dyakun.citnis.model.sql.SelectQueryBuilder;
 
 public class PairedPhonesForReplacementQuery extends QueryBase<PhoneNumber> {
 
@@ -31,12 +32,12 @@ public class PairedPhonesForReplacementQuery extends QueryBase<PhoneNumber> {
 
     @Override
     public String getQuery() {
-        String sqlSort = SortType.fromNumberSortType(numberSortType.getSelection()).getSqlSortType();
+        SortType sortType = SortType.fromNumberSortType(numberSortType.getSelection());
 
-        QueryStringBuilder query = new QueryStringBuilder()
+        SelectQueryBuilder query = new SelectQueryBuilder()
                 .select("phone_no, street_name, house_no")
                 .from("paired_phones_for_replacement")
-                .orderBy("phone_no", sqlSort);
+                .orderBy("phone_no", sortType);
         return query.toString();
     }
 

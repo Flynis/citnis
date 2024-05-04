@@ -7,6 +7,7 @@ import com.dlsc.formsfx.model.validators.Validator;
 import ru.dyakun.citnis.model.selection.SelectionStorage;
 import ru.dyakun.citnis.model.data.PhoneNumber;
 import ru.dyakun.citnis.model.selection.SortType;
+import ru.dyakun.citnis.model.sql.SelectQueryBuilder;
 
 import static ru.dyakun.citnis.model.selection.Selections.isChosen;
 import static ru.dyakun.citnis.model.selection.Selections.toInt;
@@ -74,15 +75,15 @@ public class PhoneByAddressQuery extends QueryBase<PhoneNumber> {
     @Override
     public String getQuery() {
         String phoneNumbersView = (intercity.getValue()) ? "intercity_phone_numbers" : "phone_numbers_v";
-        String sqlSort = SortType.fromNumberSortType(numberSortType.getSelection()).getSqlSortType();
+        SortType sortType = SortType.fromNumberSortType(numberSortType.getSelection());
 
-        QueryStringBuilder query = new QueryStringBuilder()
+        SelectQueryBuilder query = new SelectQueryBuilder()
                 .select("phone_no, street_name, house_no")
                 .from(phoneNumbersView)
                 .where(getConditionsCount())
                 .and(isChosen(street.getSelection()), "(street_name = '%s')", street.getSelection())
                 .and(isHouseChosen(), "(house_no = %d)", house.getValue())
-                .orderBy("phone_no", sqlSort);
+                .orderBy("phone_no", sortType);
         return query.toString();
     }
 

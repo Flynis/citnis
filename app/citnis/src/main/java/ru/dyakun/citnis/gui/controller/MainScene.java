@@ -4,11 +4,9 @@ import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import ru.dyakun.citnis.gui.component.Page;
-import ru.dyakun.citnis.gui.component.SideMenu;
-import ru.dyakun.citnis.gui.component.QueryPageBuilder;
-import ru.dyakun.citnis.gui.component.TableBuilder;
+import ru.dyakun.citnis.gui.component.*;
 import ru.dyakun.citnis.model.data.*;
+import ru.dyakun.citnis.model.operation.CreateSubscriberOp;
 import ru.dyakun.citnis.model.query.*;
 
 import java.net.URL;
@@ -27,6 +25,7 @@ public class MainScene implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         SideMenu sideMenu = new SideMenu(contentArea, sidebar);
+
         List<Page> queryPages = new ArrayList<>();
 
         var subscribersListPage = new QueryPageBuilder<>(new SubscribersListQuery())
@@ -73,7 +72,6 @@ public class MainScene implements Initializable {
         var subscribersStatPage = new QueryPageBuilder<>(new SubscribersStatQuery())
                 .tableview(new TableBuilder<SubscribersStat>()
                         .styleClass("query-table")
-                        .intCol("АТС", "serial", 100)
                         .stringCol("Район", "district", 150)
                         .doubleCol("Процент льготников", "percent", 200)
                         .intCol("Льготники", "beneficiariesCount", 100)
@@ -121,7 +119,16 @@ public class MainScene implements Initializable {
                 .title("Спаренные телефоны под замену");
         queryPages.add(pairedPhonesForReplacementPage.build());
 
+        StatisticsPage statistics = new StatisticsPage("Статистика");
+        queryPages.add(statistics);
+
+        List<Page> operationPages = new ArrayList<>();
+
+        var createSubscriberPage = new OperationPage("Добавить абонента", new CreateSubscriberOp());
+        operationPages.add(createSubscriberPage);
+
         sideMenu.addPages("Запросы", queryPages);
+        sideMenu.addPages("Операции", operationPages);
         sideMenu.setCurrent(0);
     }
 

@@ -5,6 +5,7 @@ import ru.dyakun.citnis.model.data.Ats;
 import ru.dyakun.citnis.model.selection.SelectionStorage;
 import ru.dyakun.citnis.model.data.PhoneOwner;
 import ru.dyakun.citnis.model.selection.SortType;
+import ru.dyakun.citnis.model.sql.SelectQueryBuilder;
 
 import static ru.dyakun.citnis.model.selection.Selections.*;
 
@@ -61,16 +62,16 @@ public class ParallelPhoneOwnersListQuery extends QueryBase<PhoneOwner> {
 
         Ats a = storage.getAtsByName(ats.getSelection());
         String atsSerial = (a != null) ? a.getSerial() : "";
-        String sqlSort = SortType.fromStringSortType(stringSortType.getSelection()).getSqlSortType();
+        SortType sortType = SortType.fromStringSortType(stringSortType.getSelection());
 
-        QueryStringBuilder query = new QueryStringBuilder()
+        SelectQueryBuilder query = new SelectQueryBuilder()
                 .select("last_name, first_name, phone_no")
                 .from("parallel_phone_owners")
                 .where(getConditionsCount())
                 .and(isChosen(ats.getSelection()), "(serial_no = '%s')", atsSerial)
                 .and(isChosen(district.getSelection()), "(district_name = '%s')", district.getSelection())
                 .and(onlyBeneficiaries.getValue(), "(benefit >= 0.5)")
-                .orderBy("last_name", sqlSort);
+                .orderBy("last_name", sortType);
         return query.toString();
     }
 

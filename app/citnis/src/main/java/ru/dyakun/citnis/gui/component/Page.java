@@ -1,6 +1,9 @@
 package ru.dyakun.citnis.gui.component;
 
+import javafx.geometry.Insets;
 import javafx.scene.Node;
+import javafx.scene.control.Label;
+import javafx.scene.layout.BorderPane;
 
 public abstract class Page {
 
@@ -8,11 +11,28 @@ public abstract class Page {
 
     protected final int id;
     protected final String title;
+    protected final BorderPane pane;
 
     public Page(String title) {
         this.title = title;
         id = nextId;
         nextId++;
+
+        pane = new BorderPane();
+        pane.setPrefHeight(Double.POSITIVE_INFINITY);
+        pane.setPrefWidth(Double.POSITIVE_INFINITY);
+
+        Label pageTitle = new Label(title);
+        pageTitle.getStyleClass().add("page-title");
+
+        BorderPane pageHeader = new BorderPane();
+        pageHeader.setPrefHeight(40.0);
+        pageHeader.setPrefWidth(Double.POSITIVE_INFINITY);
+        pageHeader.getStyleClass().add("page-header");
+        pageHeader.setPadding(new Insets(5, 0, 0, 30));
+        pageHeader.setLeft(pageTitle);
+
+        pane.setTop(pageHeader);
     }
 
     public String getTitle() {
@@ -23,6 +43,10 @@ public abstract class Page {
         return id;
     }
 
-    public abstract Node getNode();
+    public void reset() {}
+
+    public Node getNode() {
+        return pane;
+    }
 
 }

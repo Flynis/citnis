@@ -5,10 +5,11 @@ public class Statistics {
     private String maxDebtAts;
     private double maxDebt;
     private String maxDebtorAts;
-    private double maxDebtor;
+    private int maxDebtors;
     private String minDebtorAts;
-    private double minDebtors;
+    private int minDebtors;
     private String intercityLeader;
+    private int callsCount;
 
     public String getMaxDebtAts() {
         return maxDebtAts;
@@ -34,12 +35,12 @@ public class Statistics {
         this.maxDebtorAts = maxDebtorAts;
     }
 
-    public double getMaxDebtor() {
-        return maxDebtor;
+    public int getMaxDebtors() {
+        return maxDebtors;
     }
 
-    public void setMaxDebtor(double maxDebtor) {
-        this.maxDebtor = maxDebtor;
+    public void setMaxDebtors(int maxDebtors) {
+        this.maxDebtors = maxDebtors;
     }
 
     public String getMinDebtorAts() {
@@ -58,12 +59,20 @@ public class Statistics {
         this.intercityLeader = intercityLeader;
     }
 
-    public double getMinDebtors() {
+    public int getMinDebtors() {
         return minDebtors;
     }
 
-    public void setMinDebtors(double minDebtors) {
+    public void setMinDebtors(int minDebtors) {
         this.minDebtors = minDebtors;
+    }
+
+    public int getCallsCount() {
+        return callsCount;
+    }
+
+    public void setCallsCount(int callsCount) {
+        this.callsCount = callsCount;
     }
 
 }

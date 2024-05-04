@@ -17,7 +17,6 @@ import ru.dyakun.citnis.model.query.Query;
 
 public class QueryPage<T> extends Page {
 
-    private final BorderPane pane;
     private final Query<T> query;
     private final Button okBtn;
     private final TableView<T> tableView;
@@ -27,20 +26,6 @@ public class QueryPage<T> extends Page {
         super(title);
         this.query = query;
         this.tableView = tableView;
-        pane = new BorderPane();
-
-        pane.setPrefHeight(Double.POSITIVE_INFINITY);
-        pane.setPrefWidth(Double.POSITIVE_INFINITY);
-
-        Label pageTitle = new Label(title);
-        pageTitle.getStyleClass().add("page-title");
-
-        BorderPane pageHeader = new BorderPane();
-        pageHeader.setPrefHeight(40.0);
-        pageHeader.setPrefWidth(Double.POSITIVE_INFINITY);
-        pageHeader.getStyleClass().add("page-header");
-        pageHeader.setPadding(new Insets(5, 0, 0, 30));
-        pageHeader.setLeft(pageTitle);
 
         okBtn = new Button("Найти");
         okBtn.getStyleClass().add("form-btn");
@@ -84,7 +69,6 @@ public class QueryPage<T> extends Page {
         scrollPane.setFitToWidth(true);
         scrollPane.setContent(contentArea);
 
-        pane.setTop(pageHeader);
         pane.setCenter(scrollPane);
         setEventHandlers();
     }
@@ -119,8 +103,9 @@ public class QueryPage<T> extends Page {
     }
 
     @Override
-    public Node getNode() {
-        return pane;
+    public void reset() {
+        tableView.getItems().clear();
+        setResultLabelText(0);
     }
 
 }

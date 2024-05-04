@@ -1,137 +1,133 @@
 package ru.dyakun.citnis.gui.component;
 
-import javafx.beans.property.*;
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.Node;
 import javafx.scene.control.Label;
-import javafx.scene.layout.HBox;
 import javafx.scene.layout.VBox;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.dyakun.citnis.model.data.Ats;
 import ru.dyakun.citnis.model.data.Statistics;
 import ru.dyakun.citnis.model.db.DatabaseManager;
-import ru.dyakun.citnis.model.query.Mapper;
-import ru.dyakun.citnis.model.selection.SelectionStorage;
+import ru.dyakun.citnis.model.db.Scheduler;
+import ru.dyakun.citnis.model.db.Mapper;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 public class StatisticsPage extends Page {
 
     private static final Logger logger = LoggerFactory.getLogger(StatisticsPage.class);
 
-    private final VBox pane;
-    private final StringProperty maxDebtAts = new SimpleStringProperty();
-    private final StringProperty maxDebt = new SimpleStringProperty();
-    private final StringProperty maxDebtorAts = new SimpleStringProperty();
-    private final StringProperty maxDebtor = new SimpleStringProperty();
-    private final StringProperty minDebtorAts = new SimpleStringProperty();
-    private final StringProperty minDebtor = new SimpleStringProperty();
-    private final StringProperty intercityLeader = new SimpleStringProperty();
+    private final Statistics stat = new Statistics();
+    private final Label maxDebtAtsLabel = new Label();
+    private final Label minDebtorAtsLabel = new Label();
+    private final Label maxDebtorAtsLabel = new Label();
+    private final Label intercityLeaderLabel = new Label();
 
     public StatisticsPage(String title) {
         super(title);
-        pane = new VBox();
-        pane.setPrefWidth(Double.POSITIVE_INFINITY);
-        pane.setPadding(new Insets(5, 5, 5, 5));
-        pane.getStyleClass().add("content-area");
-        pane.setSpacing(10);
+
+        VBox contentArea = new VBox();
+        contentArea.setPrefWidth(Double.POSITIVE_INFINITY);
+        contentArea.setPadding(new Insets(5, 5, 5, 5));
+        contentArea.getStyleClass().add("content-area");
+        contentArea.setSpacing(10);
+
+        maxDebtAtsLabel.getStyleClass().add("result-label");
+        minDebtorAtsLabel.getStyleClass().add("result-label");
+        maxDebtorAtsLabel.getStyleClass().add("result-label");
+        intercityLeaderLabel.getStyleClass().add("result-label");
 
         var box = new VBox();
         box.setSpacing(10);
         box.setPadding(new Insets(10, 10, 10, 10));
         box.getStyleClass().add("content");
+        box.getChildren().addAll(maxDebtAtsLabel, maxDebtorAtsLabel, minDebtorAtsLabel, intercityLeaderLabel);
 
-        add(createLabel("Атс с наибольшим числом должников", maxDebtorAts));
-        add(createLabel("Наибольшее число должников", maxDebtor));
-        add(createLabel("Атс с наименьшим числом должников", minDebtorAts));
-        add(createLabel("Наименьшее число должников", minDebtor));
-        add(createLabel("Атс с наибольшей суммой задолжности", maxDebtAts));
-        add(createLabel("Наибольшая сумма задолжности", maxDebt));
-        add(createLabel("Город, с которым происходит большее количество междугородных переговоров", intercityLeader));
+        contentArea.getChildren().add(box);
+        pane.setCenter(contentArea);
+
+        update();
+        TimerTask task = new TimerTask() {
+            @Override
+            public void run() {
+                update();
+            }
+        };
+        Scheduler.getInstance().schedule(task, 5 * 60 * 1000);
     }
 
     private void update() {
-        logger.info("Updating selection data");
+        logger.info("Updating statistics data");
         DatabaseManager db = DatabaseManager.getInstance();
 
         String query = """
-                SELECT serial_no, MAX(total_debt) AS max_total_debt FROM ats_debt_stat
+                SELECT serial_no, MAX(total_debt) AS max_total_debt
+                \tFROM ats_debt_stat
                 \tGROUP BY serial_no;
                 
-                SELECT serial_no, MAX(debtors_count) AS max_debtors_count FROM ats_debt_stat
+                SELECT serial_no, MAX(debtors_count) AS max_debtors_count
+                \tFROM ats_debt_stat
                 \tGROUP BY serial_no;
                 
-                SELECT serial_no, MIN(total_debt) AS min_total_debt FROM ats_debt_stat
+                SELECT serial_no, MIN(debtors_count) AS min_debtors_count
+                \tFROM ats_debt_stat
                 \tGROUP BY serial_no;
                 
-                SELECT city_name, MAX(calls_count) AS max_calls_count FROM intercity_calls_count
+                SELECT city_name, MAX(calls_count) AS max_calls_count
+                \tFROM intercity_calls_count
                 \tGROUP BY city_name;
                 """;
 
-        Mapper<Ats> atsMapper = rs -> new Ats(
-                rs.getString("serial_no"),
-                rs.getString("org_name")
+        Mapper<Statistics> maxDebtMapper = rs -> {
+            stat.setMaxDebtAts(rs.getString("serial_no"));
+            stat.setMaxDebt(rs.getDouble("max_total_debt"));
+            return stat;
+        };
+        Mapper<Statistics> maxDebtorsMapper = rs -> {
+            stat.setMaxDebtorAts(rs.getString("serial_no"));
+            stat.setMaxDebtors(rs.getInt("max_debtors_count"));
+            return stat;
+        };
+        Mapper<Statistics> minDebtorsMapper = rs -> {
+            stat.setMinDebtorAts(rs.getString("serial_no"));
+            stat.setMinDebtors(rs.getInt("min_debtors_count"));
+            return stat;
+        };
+        Mapper<Statistics> intercityLeaderMapper = rs -> {
+            stat.setIntercityLeader(rs.getString("city_name"));
+            stat.setCallsCount(rs.getInt("max_calls_count"));
+            return stat;
+        };
+
+        db.executeMultipleQueries(
+                query,
+                List.of(maxDebtMapper,
+                        maxDebtorsMapper,
+                        minDebtorsMapper,
+                        intercityLeaderMapper)
         );
-        Mapper<Ats> cityAtsMapper = rs -> new Ats(
-                rs.getString("serial_no"),
-                rs.getString("org_name")
-        );
-        Mapper<String> districtNameMapper = rs -> rs.getString("district_name");
-        Mapper<String> streetNameMapper = rs -> rs.getString("street_name");
 
-        var res = db.executeMultipleQueries(query, List.of(atsMapper, cityAtsMapper, districtNameMapper, streetNameMapper));
-
-        ats = new HashMap<>();
-        atsNames = new ArrayList<>();
-        atsNames.add(notChosen);
-        for(var a: res.get(atsMapper)) {
-            var atsName = a.toString();
-            atsNames.add(atsName);
-            ats.put(atsName, (Ats) a);
-        }
-
-        cityAtsNames = new ArrayList<>();
-        cityAtsNames.add(notChosen);
-        for(var a: res.get(cityAtsMapper)) {
-            cityAtsNames.add(a.toString());
-        }
-
-        districts = new ArrayList<>();
-        districts.add(notChosen);
-        districts.addAll((Collection<? extends String>) res.get(districtNameMapper));
-
-        streets = new ArrayList<>();
-        streets.add(notChosen);
-        streets.addAll((Collection<? extends String>) res.get(streetNameMapper));
-        notifyListeners();
+        Platform.runLater(this::updateLabels);
     }
 
-    private void add(Node node) {
-        pane.getChildren().add(node);
-    }
-
-    private HBox createLabel(String text, StringProperty binding) {
-        HBox box = new HBox();
-        box.setSpacing(10);
-
-        Label label = new Label(text);
-        label.getStyleClass().add("result-label");
-
-        Label value = new Label();
-        value.textProperty().bind(binding);
-        value.getStyleClass().add("result-label");
-
-        box.getChildren().addAll(label, value);
-        return box;
-    }
-
-    @Override
-    public Node getNode() {
-        return pane;
+    private void updateLabels() {
+        maxDebtAtsLabel.setText(String.format(
+                "Атс с наибольшей суммой задолжности - %s (задолжность - %.2f руб)",
+                stat.getMaxDebtAts(),
+                stat.getMaxDebt()));
+        maxDebtorAtsLabel.setText(String.format(
+                "Атс с наибольшим числом должников - %s (должников - %d чел)",
+                stat.getMaxDebtorAts(),
+                stat.getMaxDebtors()));
+        minDebtorAtsLabel.setText(String.format(
+                "Атс с наименьшим числом должников - %s (должников - %d чел)",
+                stat.getMinDebtorAts(),
+                stat.getMinDebtors()));
+        intercityLeaderLabel.setText(String.format(
+                "Город, с которым происходит большее количество междугородных переговоров - %s (переговоров - %d)",
+                stat.getIntercityLeader(),
+                stat.getCallsCount()));
     }
 
 }

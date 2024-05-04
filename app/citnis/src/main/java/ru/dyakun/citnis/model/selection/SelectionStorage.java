@@ -1,11 +1,12 @@
 package ru.dyakun.citnis.model.selection;
 
+import javafx.application.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.dyakun.citnis.model.db.DatabaseManager;
 import ru.dyakun.citnis.model.db.Scheduler;
 import ru.dyakun.citnis.model.db.UpdateListener;
-import ru.dyakun.citnis.model.query.Mapper;
+import ru.dyakun.citnis.model.db.Mapper;
 import ru.dyakun.citnis.model.data.Ats;
 
 import java.util.*;
@@ -27,6 +28,7 @@ public class SelectionStorage {
     private final List<String> numberSort = Arrays.stream(SortType.values()).map(SortType::getNumberSortLabel).toList();
     private final List<String> atsType = Arrays.stream(AtsType.values()).map(AtsType::getLabel).toList();
     private final List<String> durations = Arrays.stream(Duration.values()).map(Duration::getLabel).toList();
+    private final List<String> genders = Arrays.stream(Gender.values()).map(Gender::getLabel).toList();
     private final List<String> alphabet;
 
     private final List<UpdateListener> listeners = new ArrayList<>();
@@ -69,17 +71,21 @@ public class SelectionStorage {
         DatabaseManager db = DatabaseManager.getInstance();
 
         String query = """
-                SELECT serial_no, org_name FROM ats_owners
+                SELECT serial_no, org_name
+                \tFROM ats_owners
                 \tORDER BY org_name;
                 
-                SELECT serial_no, org_name FROM ats_owners
+                SELECT serial_no, org_name
+                \tFROM ats_owners
                 \tJOIN city_ats USING(ats_id)
                 \tORDER BY org_name;
                 
-                SELECT district_name FROM current_city
+                SELECT district_name
+                \tFROM current_city
                 \tGROUP BY district_name;
                 
-                SELECT street_name FROM current_city
+                SELECT street_name
+                \tFROM current_city
                 \tGROUP BY street_name;
                 """;
 
@@ -118,7 +124,7 @@ public class SelectionStorage {
         streets = new ArrayList<>();
         streets.add(notChosen);
         streets.addAll((Collection<? extends String>) res.get(streetNameMapper));
-        notifyListeners();
+        Platform.runLater(this::notifyListeners);
     }
 
     public Ats getAtsByName(String name) {
@@ -159,6 +165,10 @@ public class SelectionStorage {
 
     public List<String> alphabet() {
         return alphabet;
+    }
+
+    public List<String> genders() {
+        return genders;
     }
 
 }

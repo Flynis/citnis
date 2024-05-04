@@ -5,6 +5,7 @@ import ru.dyakun.citnis.model.data.Ats;
 import ru.dyakun.citnis.model.selection.SelectionStorage;
 import ru.dyakun.citnis.model.data.PhoneNumber;
 import ru.dyakun.citnis.model.selection.SortType;
+import ru.dyakun.citnis.model.sql.SelectQueryBuilder;
 
 import static ru.dyakun.citnis.model.selection.Selections.*;
 
@@ -53,15 +54,15 @@ public class FreePhoneNumbersQuery extends QueryBase<PhoneNumber> {
 
         Ats a = storage.getAtsByName(ats.getSelection());
         String atsSerial = (a != null) ? a.getSerial() : "";
-        String sqlSort = SortType.fromNumberSortType(numberSortType.getSelection()).getSqlSortType();
+        SortType sortType = SortType.fromNumberSortType(numberSortType.getSelection());
 
-        QueryStringBuilder query = new QueryStringBuilder()
+        SelectQueryBuilder query = new SelectQueryBuilder()
                 .select("phone_no, street_name, house_no")
                 .from("free_phone_numbers")
                 .where(getConditionsCount())
                 .and(isChosen(ats.getSelection()), "(serial_no = '%s')", atsSerial)
                 .and(isChosen(district.getSelection()), "(district_name = '%s')", district.getSelection())
-                .orderBy("phone_no", sqlSort);
+                .orderBy("phone_no", sortType);
         return query.toString();
     }
 

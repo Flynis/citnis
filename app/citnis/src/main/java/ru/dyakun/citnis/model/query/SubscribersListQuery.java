@@ -5,9 +5,11 @@ import com.dlsc.formsfx.model.validators.CustomValidator;
 import com.dlsc.formsfx.model.validators.IntegerRangeValidator;
 import com.dlsc.formsfx.model.validators.Validator;
 import ru.dyakun.citnis.model.data.Ats;
+import ru.dyakun.citnis.model.selection.Gender;
 import ru.dyakun.citnis.model.selection.SelectionStorage;
 import ru.dyakun.citnis.model.data.Subscriber;
 import ru.dyakun.citnis.model.selection.SortType;
+import ru.dyakun.citnis.model.sql.SelectQueryBuilder;
 
 import static ru.dyakun.citnis.model.selection.Selections.*;
 
@@ -65,7 +67,7 @@ public class SubscribersListQuery extends QueryBase<Subscriber> {
             subscriber.setFirstname(rs.getString("first_name"));
             subscriber.setSurname(rs.getString("surname"));
             subscriber.setAge(rs.getInt("age"));
-            subscriber.setGender((rs.getString("gender").equals("m") ? "мужской" : "женский"));
+            subscriber.setGender(Gender.fromFirstLetter(rs.getString("gender")).getLabel());
             subscriber.setBenefit(rs.getDouble("benefit"));
             return subscriber;
         };
@@ -85,9 +87,9 @@ public class SubscribersListQuery extends QueryBase<Subscriber> {
 
         Ats a = storage.getAtsByName(ats.getSelection());
         String atsSerial = (a != null) ? a.getSerial() : "";
-        String sqlSort = SortType.fromStringSortType(stringSortType.getSelection()).getSqlSortType();
+        SortType sortType = SortType.fromStringSortType(stringSortType.getSelection());
 
-        QueryStringBuilder query = new QueryStringBuilder()
+        SelectQueryBuilder query = new SelectQueryBuilder()
                 .select("last_name, first_name, surname, gender, age, benefit")
                 .from("ats_subscribers")
                 .where(getConditionsCount())
@@ -95,7 +97,7 @@ public class SubscribersListQuery extends QueryBase<Subscriber> {
                 .and(true, "(age >= %d)", ageFrom.getValue())
                 .and(true, "(age <= %d)", ageTo.getValue())
                 .and(onlyBeneficiaries.getValue(), "(benefit >= 0.5)")
-                .orderBy("last_name", sqlSort);
+                .orderBy("last_name", sortType);
         return query.toString();
     }
 

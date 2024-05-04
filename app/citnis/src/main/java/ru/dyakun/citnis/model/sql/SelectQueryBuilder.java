@@ -1,27 +1,29 @@
-package ru.dyakun.citnis.model.query;
+package ru.dyakun.citnis.model.sql;
 
-public class QueryStringBuilder {
+import ru.dyakun.citnis.model.selection.SortType;
+
+public class SelectQueryBuilder {
 
     private final StringBuilder builder = new StringBuilder();
     private int conditionsCount = 0;
     private boolean isFirstCond = true;
 
-    public QueryStringBuilder select(String columns) {
+    public SelectQueryBuilder select(String columns) {
         builder.append(String.format("SELECT %s\n", columns));
         return this;
     }
 
-    public QueryStringBuilder from(String relation) {
+    public SelectQueryBuilder from(String relation) {
         builder.append(String.format("\tFROM %s\n", relation));
         return this;
     }
 
-    public QueryStringBuilder join(String relation) {
+    public SelectQueryBuilder join(String relation) {
         builder.append(String.format("\tJOIN %s\n", relation));
         return this;
     }
 
-    public QueryStringBuilder where(int conditionsCount) {
+    public SelectQueryBuilder where(int conditionsCount) {
         if(conditionsCount < 0) {
             throw new IllegalArgumentException("Conditions count must be >= 0");
         }
@@ -32,7 +34,7 @@ public class QueryStringBuilder {
         return this;
     }
 
-    public QueryStringBuilder and(boolean needToInsert, String format, Object... args) {
+    public SelectQueryBuilder and(boolean needToInsert, String format, Object... args) {
         if(needToInsert) {
             conditionsCount--;
             if(isFirstCond) {
@@ -49,8 +51,8 @@ public class QueryStringBuilder {
         return this;
     }
 
-    public QueryStringBuilder orderBy(String field, String sortType) {
-        builder.append(String.format("\tORDER BY %s %s;\n", field, sortType));
+    public SelectQueryBuilder orderBy(String field, SortType type) {
+        builder.append(String.format("\tORDER BY %s %s;\n", field, type.getSqlSortType()));
         return this;
     }
 

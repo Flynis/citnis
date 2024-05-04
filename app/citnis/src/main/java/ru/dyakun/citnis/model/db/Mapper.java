@@ -1,4 +1,4 @@
-package ru.dyakun.citnis.model.query;
+package ru.dyakun.citnis.model.db;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;

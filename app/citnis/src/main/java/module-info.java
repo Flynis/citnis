@@ -6,6 +6,7 @@ module ru.dyakun.citnis {
     requires com.jfoenix;
     requires com.dlsc.formsfx;
     requires java.sql;
+    requires java.desktop;
 
     opens ru.dyakun.citnis;
     opens ru.dyakun.citnis.gui.controller to javafx.fxml;

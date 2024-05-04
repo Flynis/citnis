@@ -6,6 +6,7 @@ import ru.dyakun.citnis.model.data.Debtor;
 import ru.dyakun.citnis.model.selection.Duration;
 import ru.dyakun.citnis.model.selection.SelectionStorage;
 import ru.dyakun.citnis.model.selection.SortType;
+import ru.dyakun.citnis.model.sql.SelectQueryBuilder;
 
 import static ru.dyakun.citnis.model.selection.Selections.*;
 
@@ -31,7 +32,7 @@ public class DebtorsListQuery extends QueryBase<Debtor> {
 
         debtDuration = Field
                 .ofSingleSelectionType(selection.durations(), 0)
-                .label("Продолжительность задолжности");
+                .label("Длительность задолжности");
 
         subscriptionFee = Field.ofBooleanType(false)
                 .label("За абонентскую плату");
@@ -71,10 +72,10 @@ public class DebtorsListQuery extends QueryBase<Debtor> {
 
         Ats a = storage.getAtsByName(ats.getSelection());
         String atsSerial = (a != null) ? a.getSerial() : "";
-        String sqlSort = SortType.fromStringSortType(stringSortType.getSelection()).getSqlSortType();
+        SortType sortType = SortType.fromStringSortType(stringSortType.getSelection());
         int duration = Duration.asInt(Duration.fromLabel(debtDuration.getSelection()));
 
-        QueryStringBuilder query = new QueryStringBuilder()
+        SelectQueryBuilder query = new SelectQueryBuilder()
                 .select("last_name, first_name, debt_amount")
                 .from("debtors")
                 .where(getConditionsCount())
@@ -83,7 +84,7 @@ public class DebtorsListQuery extends QueryBase<Debtor> {
                 .and(!isAnyDuration(debtDuration.getSelection()), "(debt_duration >= %d)", duration)
                 .and(subscriptionFee.getValue(), "(service_name = 'Звонок')")
                 .and(intercity.getValue(), "(service_name = 'Междугородний звонок')")
-                .orderBy("last_name", sqlSort);
+                .orderBy("last_name", sortType);
         return query.toString();
     }
 

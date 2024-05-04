@@ -16,7 +16,7 @@ public class SideMenu {
 
     private final StackPane contentArea;
     private final VBox sidebar;
-    private final Map<Integer, Node> pages = new HashMap<>();
+    private final Map<Integer, Page> pages = new HashMap<>();
     private final Map<Integer, Button> buttons = new HashMap<>();
     private int current = -1;
 
@@ -38,7 +38,7 @@ public class SideMenu {
         buttonBox.getStyleClass().add("side-menu");
 
         for(var page: pageBuilders) {
-            pages.put(page.getId(), page.getNode());
+            pages.put(page.getId(), page);
 
             JFXButton button = new JFXButton(page.getTitle());
             button.getStyleClass().add("side-btn");
@@ -60,9 +60,10 @@ public class SideMenu {
             current = i;
             buttons.get(current).getStyleClass().remove("side-btn");
             buttons.get(current).getStyleClass().add("side-btn-selected");
-            Node page = pages.get(current);
+            Page page = pages.get(current);
+            page.reset();
             contentArea.getChildren().clear();
-            contentArea.getChildren().add(page);
+            contentArea.getChildren().add(page.getNode());
         } else {
             setPage(i);
         }
@@ -77,9 +78,10 @@ public class SideMenu {
         current = i;
         buttons.get(current).getStyleClass().remove("side-btn");
         buttons.get(current).getStyleClass().add("side-btn-selected");
-        Node page = pages.get(current);
+        Page page = pages.get(current);
+        page.reset();
         contentArea.getChildren().clear();
-        contentArea.getChildren().add(page);
+        contentArea.getChildren().add(page.getNode());
     }
 
 }
