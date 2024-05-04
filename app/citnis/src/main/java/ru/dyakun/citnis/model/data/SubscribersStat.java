@@ -8,8 +8,8 @@ public class SubscribersStat {
     private final StringProperty serial = new SimpleStringProperty();
     private final StringProperty district = new SimpleStringProperty();
     private final DoubleProperty percent = new SimpleDoubleProperty();
-    private final IntegerProperty beneficiariesCount = new SimpleIntegerProperty();
-    private final IntegerProperty total = new SimpleIntegerProperty();
+    private final IntegerProperty beneficiariesCount = new SimpleIntegerProperty(1);
+    private final IntegerProperty total = new SimpleIntegerProperty(1);
 
     public SubscribersStat() {
         percent.bind(Bindings.multiply(100, Bindings.divide(total, beneficiariesCount)));

@@ -1,6 +1,7 @@
 package ru.dyakun.citnis.model.query;
 
 import com.dlsc.formsfx.model.structure.*;
+import ru.dyakun.citnis.model.data.Ats;
 import ru.dyakun.citnis.model.selection.SelectionStorage;
 import ru.dyakun.citnis.model.data.PhoneOwner;
 import ru.dyakun.citnis.model.selection.SortType;
@@ -58,7 +59,8 @@ public class ParallelPhoneOwnersListQuery extends QueryBase<PhoneOwner> {
     public String getQuery() {
         SelectionStorage storage = SelectionStorage.getInstance();
 
-        String atsSerial = storage.getAtsByName(ats.getSelection()).getSerial();
+        Ats a = storage.getAtsByName(ats.getSelection());
+        String atsSerial = (a != null) ? a.getSerial() : "";
         String sqlSort = SortType.fromStringSortType(stringSortType.getSelection()).getSqlSortType();
 
         QueryStringBuilder query = new QueryStringBuilder()

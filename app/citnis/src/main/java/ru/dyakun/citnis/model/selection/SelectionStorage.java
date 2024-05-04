@@ -54,6 +54,7 @@ public class SelectionStorage {
     }
 
     public void init() {
+        update();
         TimerTask task = new TimerTask() {
             @Override
             public void run() {
@@ -68,7 +69,7 @@ public class SelectionStorage {
         DatabaseManager db = DatabaseManager.getInstance();
 
         String query = """
-                SELECT serial_no, org_name FROM ats_with_org
+                SELECT serial_no, org_name FROM ats_owners
                 \tORDER BY org_name;
                 
                 SELECT serial_no, org_name FROM ats_owners

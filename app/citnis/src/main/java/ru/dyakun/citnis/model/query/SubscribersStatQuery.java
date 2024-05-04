@@ -4,6 +4,7 @@ import com.dlsc.formsfx.model.structure.Field;
 import com.dlsc.formsfx.model.structure.Form;
 import com.dlsc.formsfx.model.structure.Group;
 import com.dlsc.formsfx.model.structure.SingleSelectionField;
+import ru.dyakun.citnis.model.data.Ats;
 import ru.dyakun.citnis.model.selection.SelectionStorage;
 import ru.dyakun.citnis.model.data.SubscribersStat;
 import ru.dyakun.citnis.model.selection.SortType;
@@ -33,7 +34,7 @@ public class SubscribersStatQuery extends QueryBase<SubscribersStat> {
                 .ofSingleSelectionType(selection.stringSort(), 0)
                 .label("Сортировать");
 
-        form = Form.of(Group.of(stringSortType));
+        form = Form.of(Group.of(ats, district, stringSortType));
 
         mapper = rs -> {
             var stat = new SubscribersStat();
@@ -56,7 +57,8 @@ public class SubscribersStatQuery extends QueryBase<SubscribersStat> {
     public String getQuery() {
         SelectionStorage storage = SelectionStorage.getInstance();
 
-        String atsSerial = storage.getAtsByName(ats.getSelection()).getSerial();
+        Ats a = storage.getAtsByName(ats.getSelection());
+        String atsSerial = (a != null) ? a.getSerial() : "";
         String sqlSort = SortType.fromStringSortType(stringSortType.getSelection()).getSqlSortType();
 
         // TODO group by

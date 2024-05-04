@@ -60,7 +60,7 @@ public class DatabaseManager {
         try (Connection con = DriverManager.getConnection(url, user, passwd);
              PreparedStatement pst = con.prepareStatement(query)) {
             int i = 0;
-            boolean isResult;
+            boolean isResult = pst.execute();
             do {
                 try (ResultSet rs = pst.getResultSet()) {
                     var list = readResultSet(rs, mappers.get(i));

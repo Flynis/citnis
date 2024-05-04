@@ -1,5 +1,6 @@
 package ru.dyakun.citnis.gui;
 
+import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Cursor;
@@ -10,6 +11,7 @@ import javafx.stage.Stage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import ru.dyakun.citnis.model.db.DatabaseManager;
+import ru.dyakun.citnis.model.db.Scheduler;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -29,17 +31,12 @@ public class Window {
         try {
             Parent root = FXMLLoader.load(Objects.requireNonNull(getClass().getResource("/scenes/MainScene.fxml")));
             Scene scene = new Scene(root);
-            scene.cursorProperty().bind(
-                    Bindings
-                            .when(DatabaseManager.getInstance().executingQueryProperty())
-                            .then(Cursor.WAIT)
-                            .otherwise(Cursor.DEFAULT)
-            );
             stage.setScene(scene);
         } catch (IOException e) {
             logger.error("Main scene load failed", e);
             throw new IllegalStateException(e);
         }
+        stage.setOnCloseRequest(e -> Scheduler.getInstance().stop());
         stage.show();
     }
 

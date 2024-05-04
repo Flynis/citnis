@@ -1,6 +1,7 @@
 package ru.dyakun.citnis.model.query;
 
 import com.dlsc.formsfx.model.structure.*;
+import ru.dyakun.citnis.model.data.Ats;
 import ru.dyakun.citnis.model.data.Debtor;
 import ru.dyakun.citnis.model.selection.Duration;
 import ru.dyakun.citnis.model.selection.SelectionStorage;
@@ -68,7 +69,8 @@ public class DebtorsListQuery extends QueryBase<Debtor> {
     public String getQuery() {
         SelectionStorage storage = SelectionStorage.getInstance();
 
-        String atsSerial = storage.getAtsByName(ats.getSelection()).getSerial();
+        Ats a = storage.getAtsByName(ats.getSelection());
+        String atsSerial = (a != null) ? a.getSerial() : "";
         String sqlSort = SortType.fromStringSortType(stringSortType.getSelection()).getSqlSortType();
         int duration = Duration.asInt(Duration.fromLabel(debtDuration.getSelection()));
 

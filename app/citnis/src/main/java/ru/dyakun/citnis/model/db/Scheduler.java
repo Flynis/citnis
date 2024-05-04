@@ -16,7 +16,11 @@ public class Scheduler {
     }
 
     public void schedule(TimerTask task, long period) {
-        timer.schedule(task, 0, period);
+        timer.schedule(task, period, period);
+    }
+
+    public void stop() {
+        timer.cancel();
     }
 
 }

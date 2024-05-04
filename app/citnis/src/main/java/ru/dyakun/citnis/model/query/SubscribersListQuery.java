@@ -4,6 +4,7 @@ import com.dlsc.formsfx.model.structure.*;
 import com.dlsc.formsfx.model.validators.CustomValidator;
 import com.dlsc.formsfx.model.validators.IntegerRangeValidator;
 import com.dlsc.formsfx.model.validators.Validator;
+import ru.dyakun.citnis.model.data.Ats;
 import ru.dyakun.citnis.model.selection.SelectionStorage;
 import ru.dyakun.citnis.model.data.Subscriber;
 import ru.dyakun.citnis.model.selection.SortType;
@@ -82,7 +83,8 @@ public class SubscribersListQuery extends QueryBase<Subscriber> {
     public String getQuery() {
         SelectionStorage storage = SelectionStorage.getInstance();
 
-        String atsSerial = storage.getAtsByName(ats.getSelection()).getSerial();
+        Ats a = storage.getAtsByName(ats.getSelection());
+        String atsSerial = (a != null) ? a.getSerial() : "";
         String sqlSort = SortType.fromStringSortType(stringSortType.getSelection()).getSqlSortType();
 
         QueryStringBuilder query = new QueryStringBuilder()
