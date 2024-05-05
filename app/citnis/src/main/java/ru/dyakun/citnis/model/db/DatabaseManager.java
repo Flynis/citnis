@@ -64,6 +64,17 @@ public class DatabaseManager {
         }
     }
 
+    public void callFunction(String query) throws SQLException {
+        logger.info("Call function: \n{}", query);
+        try (Connection con = DriverManager.getConnection(url, user, passwd);
+             PreparedStatement pst = con.prepareStatement(query)) {
+            pst.executeQuery();
+        } catch (SQLException e) {
+            logger.error("Database call function failed", e);
+            throw e;
+        }
+    }
+
     public Map<Mapper<?>, List<?>> executeMultipleQueries(String query, List<Mapper<?>> mappers) {
         logger.info("Executing multiple queries: \n{}", query);
         Map<Mapper<?>, List<?>> res = new HashMap<>();

@@ -14,4 +14,6 @@ public interface Operation {
 
     String getName();
 
+    boolean needCallFunction();
+
 }

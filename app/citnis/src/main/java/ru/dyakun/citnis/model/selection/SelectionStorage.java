@@ -29,6 +29,7 @@ public class SelectionStorage {
     private final List<String> atsType = Arrays.stream(AtsType.values()).map(AtsType::getLabel).toList();
     private final List<String> durations = Arrays.stream(Duration.values()).map(Duration::getLabel).toList();
     private final List<String> genders = Arrays.stream(Gender.values()).map(Gender::getLabel).toList();
+    private final List<String> phoneTypes = Arrays.stream(PhoneType.values()).map(PhoneType::getLabel).toList();
     private final List<String> alphabet;
 
     private final List<UpdateListener> listeners = new ArrayList<>();
@@ -169,6 +170,10 @@ public class SelectionStorage {
 
     public List<String> genders() {
         return genders;
+    }
+
+    public List<String> phoneTypes() {
+        return phoneTypes;
     }
 
 }

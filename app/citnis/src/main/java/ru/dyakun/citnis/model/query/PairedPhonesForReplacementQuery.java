@@ -25,7 +25,7 @@ public class PairedPhonesForReplacementQuery extends QueryBase<PhoneNumber> {
             var phone = new PhoneNumber();
             phone.setNumber(rs.getInt("phone_no"));
             phone.setStreet(rs.getString("street_name"));
-            phone.setNumber(rs.getInt("house_no"));
+            phone.setHouse(rs.getInt("house_no"));
             return phone;
         };
     }

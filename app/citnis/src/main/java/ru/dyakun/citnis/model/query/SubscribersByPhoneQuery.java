@@ -1,12 +1,12 @@
 package ru.dyakun.citnis.model.query;
 
 import com.dlsc.formsfx.model.structure.*;
-import com.dlsc.formsfx.model.validators.CustomValidator;
 import com.dlsc.formsfx.model.validators.StringLengthValidator;
 import com.dlsc.formsfx.model.validators.Validator;
 import ru.dyakun.citnis.model.selection.SelectionStorage;
 import ru.dyakun.citnis.model.data.Subscriber;
 import ru.dyakun.citnis.model.selection.SortType;
+import ru.dyakun.citnis.model.selection.Validators;
 import ru.dyakun.citnis.model.sql.SelectQueryBuilder;
 
 public class SubscribersByPhoneQuery extends QueryBase<Subscriber> {
@@ -17,14 +17,6 @@ public class SubscribersByPhoneQuery extends QueryBase<Subscriber> {
     public SubscribersByPhoneQuery() {
         SelectionStorage selection = SelectionStorage.getInstance();
 
-        Validator<String> numberValidator = CustomValidator.forPredicate(string -> {
-            for(int i = 0; i < string.length(); i++) {
-                if(!Character.isDigit(string.charAt(i))) {
-                    return false;
-                }
-            }
-            return true;
-        }, "Номер состоит только из цифр");
         Validator<String> lengthValidator = StringLengthValidator.between(1, 8,
                 "Номер может иметь длину от 1 до 8 цифр");
 
@@ -33,7 +25,7 @@ public class SubscribersByPhoneQuery extends QueryBase<Subscriber> {
                 .placeholder("1001000")
                 .label("Номер телефона")
                 .span(8)
-                .validate(lengthValidator, numberValidator)
+                .validate(lengthValidator, Validators.onlyDigitsStringValidator("Номер состоит только из цифр"))
                 .required("Не все поля заполнены");
 
         stringSortType = Field

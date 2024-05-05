@@ -1,10 +1,10 @@
 package ru.dyakun.citnis.model.operation;
 
 import com.dlsc.formsfx.model.structure.*;
-import com.dlsc.formsfx.model.validators.CustomValidator;
 import com.dlsc.formsfx.model.validators.Validator;
 import ru.dyakun.citnis.model.selection.Gender;
 import ru.dyakun.citnis.model.selection.SelectionStorage;
+import ru.dyakun.citnis.model.selection.Validators;
 import ru.dyakun.citnis.model.sql.InsertQueryBuilder;
 
 public class CreateSubscriberOp extends OperationBase {
@@ -18,16 +18,10 @@ public class CreateSubscriberOp extends OperationBase {
 
     public CreateSubscriberOp() {
         SelectionStorage selection = SelectionStorage.getInstance();
-        String requiredMsg = "Не все поля заполнены";
+        String requiredMsg = "Обязательное поле";
 
-        Validator<String> wordValidator = CustomValidator.forPredicate(string -> {
-            for(int i = 0; i < string.length(); i++) {
-                if(!Character.isAlphabetic(string.charAt(i))) {
-                    return false;
-                }
-            }
-            return true;
-        }, "Поле может содержать только буквы");
+        Validator<String> wordValidator = Validators.onlyLettersStringValidator("Поле может содержать только буквы");
+
         lastname = Field
                 .ofStringType("")
                 .required(requiredMsg)
@@ -49,29 +43,11 @@ public class CreateSubscriberOp extends OperationBase {
                 .ofSingleSelectionType(selection.genders(), 0)
                 .label("Пол");
 
-        Validator<String> numberValidator = CustomValidator.forPredicate(string -> {
-            for(int i = 0; i < string.length(); i++) {
-                if(!Character.isDigit(string.charAt(i))) {
-                    return false;
-                }
-            }
-            return true;
-        }, "Поле может содержать только цифры");
-        Validator<String> ageValidator = CustomValidator.forPredicate(string -> {
-            if(string.isEmpty()) {
-                return true;
-            }
-            try {
-                int val = Integer.parseInt(string);
-                return val >= 14 && val <= 130;
-            } catch (NumberFormatException e) {
-                return false;
-            }
-        }, "Возраст от 14 до 130 лет");
         age = Field
                 .ofStringType("")
                 .label("Возраст")
-                .validate(numberValidator, ageValidator);
+                .validate(Validators.onlyDigitsStringValidator("Поле может содержать только цифры"),
+                        Validators.intRangeStringValidator(14, 130, "Возраст от 14 до 130 лет"));
 
         isBeneficiary = Field
                 .ofBooleanType(false)
@@ -103,7 +79,7 @@ public class CreateSubscriberOp extends OperationBase {
 
     @Override
     public String getErrorMessage(Throwable e) {
-        return "Произошла ошибка при добавлении: " + e.getMessage();
+        return "Ошибка при добавлении абонента: " + e.getMessage();
     }
 
     @Override
@@ -113,5 +89,10 @@ public class CreateSubscriberOp extends OperationBase {
 
     @Override
     public void onUpdate() {}
+
+    @Override
+    public boolean needCallFunction() {
+        return false;
+    }
 
 }

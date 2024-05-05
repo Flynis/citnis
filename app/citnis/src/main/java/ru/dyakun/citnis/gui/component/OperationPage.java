@@ -60,12 +60,16 @@ public class OperationPage extends Page {
         if(form.isValid()) {
             DatabaseManager manager = DatabaseManager.getInstance();
             try {
-                manager.executeOperation(operation.getQuery());
+                if(operation.needCallFunction()) {
+                    manager.callFunction(operation.getQuery());
+                } else {
+                    manager.executeOperation(operation.getQuery());
+                }
                 FxDialogs.showInformation("Успех", operation.getSuccessMessage());
+                form.reset();
             } catch (SQLException e) {
                 FxDialogs.showError("Ошибка", operation.getErrorMessage(e));
             }
-            form.reset();
         }
     }
 

@@ -1,12 +1,12 @@
 package ru.dyakun.citnis.model.query;
 
 import com.dlsc.formsfx.model.structure.*;
-import com.dlsc.formsfx.model.validators.CustomValidator;
 import com.dlsc.formsfx.model.validators.StringLengthValidator;
 import com.dlsc.formsfx.model.validators.Validator;
 import ru.dyakun.citnis.model.selection.SelectionStorage;
 import ru.dyakun.citnis.model.data.PhoneNumber;
 import ru.dyakun.citnis.model.selection.SortType;
+import ru.dyakun.citnis.model.selection.Validators;
 import ru.dyakun.citnis.model.sql.SelectQueryBuilder;
 
 import static ru.dyakun.citnis.model.selection.Selections.isChosen;
@@ -22,14 +22,6 @@ public class PhoneByAddressQuery extends QueryBase<PhoneNumber> {
     public PhoneByAddressQuery() {
         SelectionStorage selection = SelectionStorage.getInstance();
 
-        Validator<String> numberValidator = CustomValidator.forPredicate(string -> {
-            for(int i = 0; i < string.length(); i++) {
-                if(!Character.isDigit(string.charAt(i))) {
-                    return false;
-                }
-            }
-            return true;
-        }, "Номер дома состоит только из цифр");
         Validator<String> lengthValidator = StringLengthValidator.between(0, 3,
                 "Номер дома не длинее 3 цифр");
 
@@ -41,7 +33,7 @@ public class PhoneByAddressQuery extends QueryBase<PhoneNumber> {
         house = Field.ofStringType("")
                 .label("Дом")
                 .span(6)
-                .validate(lengthValidator, numberValidator);
+                .validate(lengthValidator, Validators.onlyDigitsStringValidator("Номер дома состоит только из цифр"));
 
         intercity = Field.ofBooleanType(false)
                 .label("Выход на межгород");

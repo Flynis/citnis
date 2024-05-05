@@ -17,4 +17,9 @@ public abstract class OperationBase implements Operation, UpdateListener {
         return form;
     }
 
+    @Override
+    public boolean needCallFunction() {
+        return true;
+    }
+
 }

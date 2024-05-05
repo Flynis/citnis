@@ -6,7 +6,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import ru.dyakun.citnis.gui.component.*;
 import ru.dyakun.citnis.model.data.*;
-import ru.dyakun.citnis.model.operation.CreateSubscriberOp;
+import ru.dyakun.citnis.model.operation.*;
 import ru.dyakun.citnis.model.query.*;
 
 import java.net.URL;
@@ -25,17 +25,22 @@ public class MainScene implements Initializable {
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
         SideMenu sideMenu = new SideMenu(contentArea, sidebar);
+        sideMenu.addPages("Запросы", createQueryPages());
+        sideMenu.addPages("Операции", createOperationPages());
+        sideMenu.setCurrent(0);
+    }
 
+    private static List<Page> createQueryPages() {
         List<Page> queryPages = new ArrayList<>();
 
         var subscribersListPage = new QueryPageBuilder<>(new SubscribersListQuery())
                 .tableview(new TableBuilder<Subscriber>()
-                            .styleClass("query-table")
-                            .stringCol("Фамилия", "lastname", 150)
-                            .stringCol("Имя", "firstname", 150)
-                            .intCol("Возраст", "age", 100)
-                            .stringCol("Пол", "gender", 100)
-                            .build())
+                        .styleClass("query-table")
+                        .stringCol("Фамилия", "lastname", 150)
+                        .stringCol("Имя", "firstname", 150)
+                        .intCol("Возраст", "age", 100)
+                        .stringCol("Пол", "gender", 100)
+                        .build())
                 .title("Список абонентов");
         queryPages.add(subscribersListPage.build());
 
@@ -122,14 +127,34 @@ public class MainScene implements Initializable {
         StatisticsPage statistics = new StatisticsPage("Статистика");
         queryPages.add(statistics);
 
+        return queryPages;
+    }
+
+    private static List<Page> createOperationPages() {
         List<Page> operationPages = new ArrayList<>();
 
         var createSubscriberPage = new OperationPage("Добавить абонента", new CreateSubscriberOp());
         operationPages.add(createSubscriberPage);
 
-        sideMenu.addPages("Запросы", queryPages);
-        sideMenu.addPages("Операции", operationPages);
-        sideMenu.setCurrent(0);
+        var createPhoneNumberPage = new OperationPage("Добавить номер телефона", new CreatePhoneNumberOp());
+        operationPages.add(createPhoneNumberPage);
+
+        var changePhoneTypePage = new OperationPage("Изменить тип телефона", new ChangePhoneTypeOp());
+        operationPages.add(changePhoneTypePage);
+
+        var createPayphonePage = new OperationPage("Добавить таксофон", new CreatePayphoneOp());
+        operationPages.add(createPayphonePage);
+
+        var enableIntercityCallsPage = new OperationPage("Подключить межгород", new EnableIntercityCallsOp());
+        operationPages.add(enableIntercityCallsPage);
+
+        var disableIntercityCallsPage = new OperationPage("Отключить межгород", new DisableIntercityCallsOp());
+        operationPages.add(disableIntercityCallsPage);
+
+        var registerPhoneNumberForSubscriberPage = new OperationPage("Оформить номер", new RegisterPhoneNumberForSubscriberOp());
+        operationPages.add(registerPhoneNumberForSubscriberPage);
+
+        return operationPages;
     }
 
 }

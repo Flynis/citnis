@@ -39,7 +39,7 @@ public class PayphonesListQuery extends QueryBase<Payphone> {
             var payphone = new Payphone();
             payphone.setNumber(rs.getInt("phone_no"));
             payphone.setStreet(rs.getString("street_name"));
-            payphone.setNumber(rs.getInt("house_no"));
+            payphone.setHouse(rs.getInt("house_no"));
             return payphone;
         };
     }
