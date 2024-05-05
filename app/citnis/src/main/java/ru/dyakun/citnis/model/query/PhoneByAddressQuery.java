@@ -72,9 +72,10 @@ public class PhoneByAddressQuery extends QueryBase<PhoneNumber> {
         SelectQueryBuilder query = new SelectQueryBuilder()
                 .select("phone_no, street_name, house_no")
                 .from(phoneNumbersView)
+                .join("current_city USING(address_id)")
                 .where(getConditionsCount())
                 .and(isChosen(street.getSelection()), "(street_name = '%s')", street.getSelection())
-                .and(isHouseChosen(), "(house_no = %d)", house.getValue())
+                .and(isHouseChosen(), "(house_no = %s)", house.getValue())
                 .orderBy("phone_no", sortType);
         return query.toString();
     }

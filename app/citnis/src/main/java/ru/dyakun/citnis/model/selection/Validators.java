@@ -53,7 +53,7 @@ public class Validators {
 
     public static Validator<String> selectionChooseValidator(String message) {
         return CustomValidator.forPredicate(
-                string -> !string.isEmpty() && Selections.isChosen(string),
+                string -> string != null && !string.isEmpty() && Selections.isChosen(string),
                 message);
     }
 
