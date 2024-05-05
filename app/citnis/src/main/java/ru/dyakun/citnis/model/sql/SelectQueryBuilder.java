@@ -52,12 +52,13 @@ public class SelectQueryBuilder {
     }
 
     public SelectQueryBuilder orderBy(String field, SortType type) {
-        builder.append(String.format("\tORDER BY %s %s;\n", field, type.getSqlSortType()));
+        builder.append(String.format("\tORDER BY %s %s", field, type.getSqlSortType()));
         return this;
     }
 
     @Override
     public String toString() {
+        builder.append(";\n");
         return builder.toString();
     }
 

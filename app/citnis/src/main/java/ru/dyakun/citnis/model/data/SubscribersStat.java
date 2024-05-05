@@ -5,7 +5,6 @@ import javafx.beans.property.*;
 
 public class SubscribersStat {
 
-    private final StringProperty district = new SimpleStringProperty();
     private final DoubleProperty percent = new SimpleDoubleProperty();
     private final IntegerProperty beneficiariesCount = new SimpleIntegerProperty();
     private final IntegerProperty total = new SimpleIntegerProperty();
@@ -23,24 +22,12 @@ public class SubscribersStat {
         });
     }
 
-    public void setDistrict(String district) {
-        this.district.set(district);
-    }
-
     public void setBeneficiariesCount(int beneficiariesCount) {
         this.beneficiariesCount.set(beneficiariesCount);
     }
 
     public void setTotal(int total) {
         this.total.set(total);
-    }
-
-    public String getDistrict() {
-        return district.get();
-    }
-
-    public StringProperty districtProperty() {
-        return district;
     }
 
     public double getPercent() {

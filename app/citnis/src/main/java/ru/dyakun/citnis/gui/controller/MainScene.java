@@ -74,16 +74,25 @@ public class MainScene implements Initializable {
                 .title("Список таксофонов");
         queryPages.add(payphonesPage.build());
 
-        var subscribersStatPage = new QueryPageBuilder<>(new SubscribersStatQuery())
+        var atsSubscribersStatPage = new QueryPageBuilder<>(new AtsSubscribersStatQuery())
                 .tableview(new TableBuilder<SubscribersStat>()
                         .styleClass("query-table")
-                        .stringCol("Район", "district", 150)
                         .doubleCol("Процент льготников", "percent", 200)
                         .intCol("Льготники", "beneficiariesCount", 100)
                         .intCol("Всего", "total", 100)
                         .build())
-                .title("Соотношение абонентов");
-        queryPages.add(subscribersStatPage.build());
+                .title("Соотношение абонентов на АТС");
+        queryPages.add(atsSubscribersStatPage.build());
+
+        var districtSubscribersStatPage = new QueryPageBuilder<>(new DistrictSubscribersStatQuery())
+                .tableview(new TableBuilder<SubscribersStat>()
+                        .styleClass("query-table")
+                        .doubleCol("Процент льготников", "percent", 200)
+                        .intCol("Льготники", "beneficiariesCount", 100)
+                        .intCol("Всего", "total", 100)
+                        .build())
+                .title("Соотношение абонентов по районам");
+        queryPages.add(districtSubscribersStatPage.build());
 
         var parallelPhoneOwnersListPage = new QueryPageBuilder<>(new ParallelPhoneOwnersListQuery())
                 .tableview(new TableBuilder<PhoneOwner>()
@@ -123,6 +132,16 @@ public class MainScene implements Initializable {
                         .build())
                 .title("Спаренные телефоны под замену");
         queryPages.add(pairedPhonesForReplacementPage.build());
+
+        var debtorsInviteListPage = new QueryPageBuilder<>(new DebtorsInviteListQuery())
+                .tableview(new TableBuilder<Debtor>()
+                        .styleClass("query-table")
+                        .stringCol("Фамилия", "lastname", 150)
+                        .stringCol("Имя", "firstname", 150)
+                        .doubleCol("Задолжность", "debt", 150)
+                        .build())
+                .title("Необходимо письменное уведомление");
+        queryPages.add(debtorsInviteListPage.build());
 
         StatisticsPage statistics = new StatisticsPage("Статистика");
         queryPages.add(statistics);

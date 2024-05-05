@@ -19,7 +19,7 @@ public class SubscribersListQuery extends QueryBase<Subscriber> {
     private final BooleanField onlyBeneficiaries;
     private final IntegerField ageFrom;
     private final IntegerField ageTo;
-    private final SingleSelectionField<String> firstLastNameChar; // TODO
+    private final SingleSelectionField<String> firstLastNameChar;
     private final SingleSelectionField<String> stringSortType;
 
     public SubscribersListQuery() {
@@ -78,6 +78,7 @@ public class SubscribersListQuery extends QueryBase<Subscriber> {
         count += toInt(isChosen(ats.getSelection()));
         count += 2; // age from and age to
         count += toInt(onlyBeneficiaries.getValue());
+        count += toInt(isChosen(firstLastNameChar.getSelection()));
         return count;
     }
 
@@ -97,6 +98,7 @@ public class SubscribersListQuery extends QueryBase<Subscriber> {
                 .and(true, "(age >= %d)", ageFrom.getValue())
                 .and(true, "(age <= %d)", ageTo.getValue())
                 .and(onlyBeneficiaries.getValue(), "(benefit >= 0.5)")
+                .and(isChosen(firstLastNameChar.getSelection()), "(LEFT(last_name, 1) = '%s')", firstLastNameChar.getSelection())
                 .orderBy("last_name", sortType);
         return query.toString();
     }

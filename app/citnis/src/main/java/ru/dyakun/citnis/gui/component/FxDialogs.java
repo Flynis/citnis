@@ -7,9 +7,7 @@ import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Priority;
-import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import ru.dyakun.citnis.gui.Window;
 
 import java.awt.*;
 import java.io.PrintWriter;
@@ -118,7 +116,7 @@ public class FxDialogs {
         alert.getButtonTypes().setAll(buttons);
 
         Optional<ButtonType> result = alert.showAndWait();
-        if (!result.isPresent()) {
+        if (result.isEmpty()) {
             return CANCEL;
         } else {
             return result.get().getText();
@@ -133,11 +131,7 @@ public class FxDialogs {
         dialog.setContentText(message);
 
         Optional<String> result = dialog.showAndWait();
-        if (result.isPresent()) {
-            return result.get();
-        } else {
-            return null;
-        }
+        return result.orElse(null);
 
     }
 

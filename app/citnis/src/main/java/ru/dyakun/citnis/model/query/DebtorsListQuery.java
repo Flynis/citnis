@@ -34,7 +34,7 @@ public class DebtorsListQuery extends QueryBase<Debtor> {
                 .ofSingleSelectionType(selection.durations(), 0)
                 .label("Длительность задолжности");
 
-        subscriptionFee = Field.ofBooleanType(false)
+        subscriptionFee = Field.ofBooleanType(true)
                 .label("За абонентскую плату");
 
         intercity = Field.ofBooleanType(false)
@@ -81,7 +81,7 @@ public class DebtorsListQuery extends QueryBase<Debtor> {
                 .where(getConditionsCount())
                 .and(isChosen(ats.getSelection()), "(serial_no = '%s')", atsSerial)
                 .and(isChosen(district.getSelection()), "(district_name = '%s')", district.getSelection())
-                .and(!isAnyDuration(debtDuration.getSelection()), "(debt_duration >= %d)", duration)
+                .and(!isAnyDuration(debtDuration.getSelection()), "(debt_duration_in_days >= %d)", duration)
                 .and(subscriptionFee.getValue(), "(service_name = 'Звонок')")
                 .and(intercity.getValue(), "(service_name = 'Междугородний звонок')")
                 .orderBy("last_name", sortType);

@@ -1,26 +1,23 @@
 package ru.dyakun.citnis.model.query;
 
-import com.dlsc.formsfx.model.structure.Field;
-import com.dlsc.formsfx.model.structure.Form;
-import com.dlsc.formsfx.model.structure.Group;
-import com.dlsc.formsfx.model.structure.SingleSelectionField;
+import com.dlsc.formsfx.model.structure.*;
 import ru.dyakun.citnis.model.data.Ats;
+import ru.dyakun.citnis.model.data.Debtor;
 import ru.dyakun.citnis.model.selection.SelectionStorage;
-import ru.dyakun.citnis.model.data.SubscribersStat;
 import ru.dyakun.citnis.model.selection.SortType;
 import ru.dyakun.citnis.model.sql.SelectQueryBuilder;
 
-import static ru.dyakun.citnis.model.selection.Selections.isChosen;
-import static ru.dyakun.citnis.model.selection.Selections.toInt;
+import static ru.dyakun.citnis.model.selection.Selections.*;
 
-
-public class SubscribersStatQuery extends QueryBase<SubscribersStat> {
+public class DebtorsInviteListQuery extends QueryBase<Debtor> {
 
     private final SingleSelectionField<String> ats;
     private final SingleSelectionField<String> district;
+    private final BooleanField subscriptionFee;
+    private final BooleanField intercity;
     private final SingleSelectionField<String> stringSortType;
 
-    public SubscribersStatQuery() {
+    public DebtorsInviteListQuery() {
         SelectionStorage selection = SelectionStorage.getInstance();
 
         ats = Field
@@ -31,18 +28,25 @@ public class SubscribersStatQuery extends QueryBase<SubscribersStat> {
                 .ofSingleSelectionType(selection.districts(), 0)
                 .label("Район");
 
+        subscriptionFee = Field.ofBooleanType(true)
+                .label("За абонентскую плату");
+
+        intercity = Field.ofBooleanType(false)
+                .label("За межгород");
+
         stringSortType = Field
                 .ofSingleSelectionType(selection.stringSort(), 0)
-                .label("Сортировать");
+                .label("Сортировать")
+                .span(4);
 
-        form = Form.of(Group.of(ats, district, stringSortType));
+        form = Form.of(Group.of(ats, district, subscriptionFee , intercity, stringSortType));
 
         mapper = rs -> {
-            var stat = new SubscribersStat();
-            stat.setDistrict(rs.getString("district_name"));
-            stat.setBeneficiariesCount(rs.getInt("beneficiaries_count"));
-            stat.setTotal(rs.getInt("total_subscribers"));
-            return stat;
+            var debtor =  new Debtor();
+            debtor.setLastname(rs.getString("last_name"));
+            debtor.setFirstname(rs.getString("first_name"));
+            debtor.setDebt(rs.getDouble("debt_amount"));
+            return debtor;
         };
     }
 
@@ -50,6 +54,9 @@ public class SubscribersStatQuery extends QueryBase<SubscribersStat> {
         int count = 0;
         count += toInt(isChosen(ats.getSelection()));
         count += toInt(isChosen(district.getSelection()));
+        count += toInt(subscriptionFee.getValue());
+        count += toInt(intercity.getValue());
+        count += 1; // duration = 2
         return count;
     }
 
@@ -61,14 +68,16 @@ public class SubscribersStatQuery extends QueryBase<SubscribersStat> {
         String atsSerial = (a != null) ? a.getSerial() : "";
         SortType sortType = SortType.fromStringSortType(stringSortType.getSelection());
 
-        // TODO group by
         SelectQueryBuilder query = new SelectQueryBuilder()
-                .select("serial_no, district_name, beneficiaries_count, total_subscribers")
-                .from("ats_beneficiaries_count_by_district")
+                .select("last_name, first_name, debt_amount")
+                .from("debtors")
                 .where(getConditionsCount())
                 .and(isChosen(ats.getSelection()), "(serial_no = '%s')", atsSerial)
                 .and(isChosen(district.getSelection()), "(district_name = '%s')", district.getSelection())
-                .orderBy("serial_no", sortType);
+                .and(true, "(debt_duration_in_days = 2)")
+                .and(subscriptionFee.getValue(), "(service_name = 'Звонок')")
+                .and(intercity.getValue(), "(service_name = 'Междугородний звонок')")
+                .orderBy("last_name", sortType);
         return query.toString();
     }
 
