@@ -1,0 +1,36 @@
+\ProvidesPackage{nirstyle}
+
+
+\RequirePackage[utf8]{inputenc}
+\RequirePackage[T2A]{fontenc}
+\RequirePackage[english,russian]{babel}
+\RequirePackage{xcolor}
+\RequirePackage[left=2cm, right=1cm, bottom=2cm, top=2cm]{geometry}
+\RequirePackage{indentfirst}
+\RequirePackage[pagestyles]{titlesec}
+\RequirePackage[normalem]{ulem}
+\RequirePackage{parskip}
+\RequirePackage{tempora}
+\RequirePackage{setspace}
+\RequirePackage{tocloft}
+
+
+\linespread{1}
+\setlength\parindent{12.5mm}
+\setlength\parskip{0\baselineskip plus 0mm minus 0mm}
+
+
+\newcommand{\unnumberedsection}[1]{\addcontentsline{toc}{section}{#1} \section*{#1}}
+\newcommand{\sectionfont}{\fontfamily{droid}}
+\renewcommand{\subsectionmark}[1]{\markright{\small\thesubsection.\ #1}}
+
+
+\titleformat{\chapter}
+	{\Large\centering\bfseries\MakeUppercase}{\thechapter}
+	{1em}{}
+\titleformat{\sectpon}
+	{\large\centering\bfseries\MakeUppercase}{\thesection}
+	{1em}{}
+
+
+\renewcommand\cftchapdotsep{\cftdotsep}

@@ -1,0 +1,45 @@
+\documentclass[14pt, a4paper]{extreport}
+
+
+\usepackage{nirstyle}
+\usepackage{subfiles}
+\usepackage{relsize}
+\usepackage{tabularray}
+\usepackage{listings}
+\usepackage{cmap}
+\usepackage{graphicx}
+
+\NewTblrTheme{TC}{
+    \DefTblrTemplate{contfoot-text}{default}{}
+    \DefTblrTemplate{conthead-text}{default}{}
+    \SetTblrStyle{contfoot-text}{font=\footnotesize\itshape, fg=black!80}
+}
+\lstset{extendedchars=\true}
+
+
+\begin{document}
+
+
+\subfile{sections/title}
+
+
+\setcounter{page}{2}
+\renewcommand{\contentsname}{\hfill\Large\MakeUppercase{Содержание} \hfill\null}
+\tableofcontents
+
+
+\subfile{sections/introduction}
+
+
+\subfile{sections/infological}
+
+
+\subfile{sections/logical}
+
+\subfile{sections/triggers}
+
+\subfile{sections/queries.tex}
+
+\subfile{sections/app.tex}
+
+\end{document}
