@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.geometry.*?>
+<?import javafx.scene.layout.*?>
+
+<BorderPane maxHeight="-Infinity" maxWidth="-Infinity"
+            minHeight="480" minWidth="640"
+            prefHeight="900.0" prefWidth="1600.0"
+            stylesheets="@../css/global.css"
+            xmlns="http://javafx.com/javafx/17.0.2-ea"
+            xmlns:fx="http://javafx.com/fxml/1"
+            fx:controller="ru.dyakun.citnis.gui.controller.MainScene">
+   <left>
+       <VBox fx:id="sidebar" prefHeight="Infinity" prefWidth="200.0" styleClass="side-menu" BorderPane.alignment="CENTER" spacing="10">
+           <padding>
+               <Insets top="50" />
+           </padding>
+       </VBox>
+   </left>
+   <center>
+      <StackPane fx:id="contentArea" prefHeight="150.0" prefWidth="250.0" BorderPane.alignment="CENTER" />
+   </center>
+</BorderPane>
