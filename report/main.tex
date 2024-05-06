@@ -9,12 +9,13 @@
 \usepackage{cmap}
 \usepackage{graphicx}
 
-
 \NewTblrTheme{TC}{
     \DefTblrTemplate{contfoot-text}{default}{}
     \DefTblrTemplate{conthead-text}{default}{}
     \SetTblrStyle{contfoot-text}{font=\footnotesize\itshape, fg=black!80}
 }
+\lstset{extendedchars=\true}
+
 
 \begin{document}
 
@@ -38,5 +39,7 @@
 \subfile{sections/triggers}
 
 \subfile{sections/queries.tex}
+
+\subfile{sections/app.tex}
 
 \end{document}

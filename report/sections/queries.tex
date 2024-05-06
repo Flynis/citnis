@@ -9,17 +9,7 @@
 представлений. Описанные здесь представления находятся в файле 
 \textbf{citnisdb-views.sql}.
 
-1. Представление с текущим городом, как аналог глобальной константе.
-Очевидно что, текущий город уже должен быть в таблице Cities.
-
-\begin{lstlisting}
-CREATE VIEW current_city AS
-SELECT *
-    FROM cities 
-    WHERE city_name = 'Novosibirsk'; 
-\end{lstlisting}
-
-2. Представление с полным адресом, потому что часто будем фильтровать
+\textbf{1.} Представление с полным адресом, потому что часто будем фильтровать
 по разным частям адреса.
 
 \begin{lstlisting}
@@ -31,221 +21,357 @@ SELECT *
     JOIN cities USING(city_id);
 \end{lstlisting}
 
-3. Абоненты АТС
+\textbf{2.} Представление с текущим городом. Содержит все адреса города.
+
 \begin{lstlisting}
-CREATE VIEW ats_subscribers AS
+CREATE VIEW current_city AS
 SELECT *
-    FROM ats
-    JOIN phone_numbers_v USING(ats_id)
-    JOIN subscriptions USING(phone_id)
-    JOIN subscribers USING(subscriber_id);
+    FROM full_address 
+    WHERE city_name = ' Новосибирск ';
+\end{lstlisting}
+
+\textbf{3.} Представление с организациями-владельцами АТС.
+
+\begin{lstlisting}
+CREATE VIEW ats_owners AS
+SELECT ats_id, serial_no, org_name
+    FROM ats 
+    JOIN organizations using(org_id);
 \end{lstlisting}
 
 \section{Реализация запросов}
 
-Запросы можно найти в файле \textbf{citnisdb-queries.sql}.
-Переменные в запросе будем обозначать как \$(название-переменной). 
-Везде где требуется найти общее число записей, просто заменяем
-\textbf{SELECT названия столбцов FROM} на 
-\textbf{SELECT COUNT (*) FROM}.
+Запросы реализуем следующим образом: для каждого запроса
+создадим представление (либо используем существующее), 
+из которого будем получать данные. Клиентские приложения
+будут обращаться \textbf{только} к представлениям. Таким образом у нас 
+получится интерфейс базы данных, что позволит нам при необходимости 
+изменять реализацию представлений не ломая клиентские 
+приложения. 
 
-\textbf{1. Получить} перечень и общее число абонентов указанной АТС полностью, 
+Скрипт с представлениями можно найти в файле \textbf{citnisdb-query-views.sql},
+а примеры запросов в файле \textbf{citnisdb-queries.sql}.
+
+\subsection{Перечень абонентов АТС}
+
+\textbf{Получить} перечень и общее число абонентов указанной АТС полностью, 
 только льготников, по возрастному признаку, по группе фамилий
 
 \begin{lstlisting}
-SELECT first_name, last_name, surname, gender, age 
-    FROM $(ats_type_view) 
-    JOIN ats_subscribers USING(ats_id)
-    WHERE (age >= $(subscriber_age) AND
-        benefit >= $(subscriber_benefit));
+CREATE VIEW ats_subscribers AS
+    SELECT serial_no, address_id, phone_no, phone_type, 
+        last_name, first_name, surname, age, gender, benefit, subscription_id
+        FROM ats
+        JOIN phone_numbers_v USING(ats_id)
+        JOIN subscriptions USING(phone_id)
+        JOIN subscribers USING(subscriber_id);
 \end{lstlisting}
 
-\textbf{2. Получить} перечень и общее число свободных телефонных 
+Пример запроса от клиентского приложения:
+
+\begin{lstlisting}
+SELECT last_name, first_name, surname, gender, age, benefit
+	FROM ats_subscribers
+	WHERE (serial_no = '6IBVG115145') AND
+		(age >= 18) AND
+		(age <= 100) AND
+		(benefit >= 0.5) AND
+		(LEFT(last_name, 1) = 'А')
+	ORDER BY last_name ASC;
+\end{lstlisting}
+
+\subsection{Перечень свободных телефонных номеров}
+
+\textbf{Получить} перечень и общее число свободных телефонных 
 номеров на указанной АТС, по всей ГТС, по признаку возможности установки 
 телефона в данном районе.
 
 \begin{lstlisting}
-SELECT phone_no 
-    FROM phone_numbers_v
-    LEFT JOIN subscriptions USING(phone_id)
-    JOIN full_address USING(address_id)
-    JOIN ats USING(ats_id)
-    WHERE subscriptions.phone_id IS NULL AND 
-        district_name = $(district_name) AND 
-        ($(all_ats_query) OR ats_name = $(desired_ats_name));
+CREATE VIEW free_phone_numbers AS
+    SELECT serial_no, phone_id, phone_no, address_id, district_name, street_name, house_no
+        FROM phone_numbers_v
+        LEFT JOIN subscriptions USING(phone_id)
+        JOIN current_city USING(address_id)
+        JOIN ats USING(ats_id)
+        WHERE subscriptions.phone_id IS NULL;
 \end{lstlisting}
 
-\textbf{3. Получить} перечень и общее число должников на указанной АТС, 
+Пример запроса от клиентского приложения:
+
+\begin{lstlisting}
+SELECT phone_no, street_name, house_no
+	FROM free_phone_numbers
+	WHERE (serial_no = '7IBFA115116') AND
+		(district_name = ' Дзержинский ')
+	ORDER BY phone_no ASC;
+\end{lstlisting}
+
+\subsection{Перечень должников}
+
+\textbf{Получить} перечень и общее число должников на указанной АТС, 
 по всей ГТС, по данному району, абонентов, которые имеют задолженность 
 уже больше недели (месяца), по признаку задолженности за межгород и (или) 
 по абонентской плате, по размеру долга.
 
 \begin{lstlisting}
-SELECT first_name, last_name, surname, gender, age
-    FROM ats_subscribers 
-    JOIN full_address USING(address_id)
-    JOIN service_connection USING(subscription_id)
-    JOIN services USING(service_id)
-    WHERE district_name = $(district_name) AND 
-        ($(all_ats_query) OR ats_name = $(desired_ats_name)) AND 
-        debt >= $(debt) AND 
-        service_name = "Intercity call" AND
-        EXTRACT(DAY FROM (CURRENT_TIMESTAMP - payment_date)) > 7;
+CREATE VIEW debtors AS
+    SELECT serial_no, address_id, last_name, first_name, surname, service_name, district_name, street_name, house_no,
+            date_diff_in_days(debt_formation_date, payment_date) AS debt_duration_in_days,
+            date_diff_in_months(debt_formation_date, payment_date, 20) * service_cost AS debt_amount
+        FROM ats_subscribers
+        JOIN service_connection USING(subscription_id)
+        JOIN current_city USING(address_id)
+        JOIN services USING(service_id),
+        debt_formation_date()
+        WHERE payment_date < debt_formation_date;
 \end{lstlisting}
 
-\textbf{4. Определить} АТС (любого или конкретного типа), на которой 
+Пример запроса от клиентского приложения:
+
+\begin{lstlisting}
+SELECT last_name, first_name, debt_amount
+	FROM debtors
+	WHERE (serial_no = '6IBVG115145') AND
+		(district_name = ' Дзержинский ') AND
+		(debt_duration_in_days >= 31) AND
+		(service_name = ' Междугородний звонок ')
+	ORDER BY last_name ASC;
+\end{lstlisting}
+
+\subsection{Статистика по должникам}
+
+\textbf{Определить} АТС (любого или конкретного типа), на которой 
 самое большое (маленькое) число должников, самая большая сумма задолженности.
 
 \begin{lstlisting}
-WITH ats_debtors AS (
-    SELECT ats_name, COUNT(subscriber_id) AS debtors_count
-    FROM $(ats_type_view) 
-    JOIN ats_subscribers USING(ats_id)
-    WHERE debt > 0
-    GROUP BY ats_name
-    ), 
-    ats_min_debtors AS (
-    SELECT MIN(debtors_count)
-    FROM ats_debtors 
-    )
-SELECT ats_name
-    FROM ats_debtors
-    WHERE debtors_count IN (SELECT * FROM ats_min_debtors);
-
-WITH ats_debt AS (
-    SELECT ats_name, SUM(debt) AS total_debt
-    FROM $(ats_type_view) 
-    JOIN ats_subscribers USING(ats_id)
-    GROUP BY ats_name
-    ), 
-    ats_max_debt AS (
-    SELECT MAX(total_debt)
-    FROM ats_debt 
-    )
-SELECT ats_name
-    FROM ats_debt
-    WHERE total_debt IN (SELECT * FROM ats_max_debt);
+CREATE VIEW ats_debt_stat AS 
+    SELECT serial_no, COUNT(*) AS debtors_count, SUM(debt_amount) AS total_debt 
+        FROM debtors
+        GROUP BY serial_no;  
 \end{lstlisting}
 
-\textbf{5. Получить} перечень и общее число общественных телефонов и 
+Примеры запросов от клиентского приложения:
+
+АТС с наибольшей задолжностью
+
+\begin{lstlisting}
+SELECT serial_no, MAX(total_debt) AS max_total_debt
+	FROM ats_debt_stat
+	GROUP BY serial_no;
+\end{lstlisting}
+
+АТС с наибольшим числом должников
+
+\begin{lstlisting}
+SELECT serial_no, MAX(debtors_count) AS max_debtors_count
+	FROM ats_debt_stat
+	GROUP BY serial_no;
+\end{lstlisting}
+
+АТС с наименьшим числом должников
+
+\begin{lstlisting}
+SELECT serial_no, MIN(debtors_count) AS min_debtors_count
+	FROM ats_debt_stat
+	GROUP BY serial_no;
+\end{lstlisting}
+
+\subsection{Перечень таксофонов}
+
+\textbf{Получить} перечень и общее число общественных телефонов и 
 таксофонов во всем городе, принадлежащих указанной АТС, по признаку 
 нахожения в данном районе.
 
 \begin{lstlisting}
-SELECT phone_no
-    FROM payphones_v
-    JOIN ats USING(ats_id)
-    JOIN full_address USING(address_id)
-    WHERE ($(all_ats_query) OR ats_name = $(desired_ats_name))
-        AND district_name = $(district_name);
+CREATE VIEW payphones_by_ats AS
+    SELECT serial_no, phone_id, phone_no, address_id, district_name, street_name, house_no
+        FROM payphones_v
+        JOIN current_city USING(address_id)
+        JOIN city_ats_v USING(ats_id);
 \end{lstlisting}
 
-\textbf{6. Найти} процентное соотношение обычных и льготных абонентов 
+Пример запроса от клиентского приложения:
+
+\begin{lstlisting}
+SELECT phone_no, street_name, house_no
+	FROM payphones_by_ats
+	WHERE (serial_no = '7IBFA115116') AND
+		(district_name = ' Железнодорожный ')
+	ORDER BY phone_no ASC;
+\end{lstlisting}
+
+\subsection{Соотношение обычных и льготных абонентов}
+
+\textbf{Найти} процентное соотношение обычных и льготных абонентов 
 на указанной АТС, по всей ГТС, по данному району, по типам АТС.
 
 \begin{lstlisting}
-WITH ats_subscribers_count AS (
-    SELECT ats_id, COUNT(subscriber_id) AS subscribers_count  
+CREATE VIEW ats_beneficiaries_count_by_district AS 
+    SELECT serial_no,  
+        district_name,  
+        COUNT(*) FILTER (WHERE benefit >= 0.5) AS beneficiaries_count, 
+        COUNT(*) AS total_subscribers
         FROM ats_subscribers
-        GROUP BY ats_name
-    ),
-    ats_beneficiaries_count AS (
-    SELECT ats_id, COUNT(subscriber_id) AS beneficiaries_count  
-        FROM ats_subscribers
-        WHERE benefit >= 0.5
-        GROUP BY ats_name
-    )
-SELECT ats_name, (beneficiaries_count / subscribers_count * 100) AS beneficiaries_percent
-    FROM ats
-    JOIN ats_subscribers_count USING(ats_id)
-    JOIN ats_beneficiaries_count USING(ats_id)
-    WHERE ats_name = $(desired_ats_name);
+        JOIN current_city USING(address_id)
+        GROUP BY serial_no, district_name;
 \end{lstlisting}
 
-\textbf{7. Получить} перечень и общее число абонентов указанной АТС, 
+Примеры запросов от клиентского приложения:
+
+Соотношение на указанной АТС
+\begin{lstlisting}
+SELECT SUM(beneficiaries_count) AS ben_cnt, SUM(total_subscribers) AS total_subs
+	FROM ats_beneficiaries_count_by_district
+	WHERE (serial_no = '6IBVG115145');
+\end{lstlisting}
+
+Соотношение по указанному району
+\begin{lstlisting}
+SELECT SUM(beneficiaries_count) AS ben_cnt, SUM(total_subscribers) AS total_subs
+	FROM ats_beneficiaries_count_by_district
+	WHERE (district_name = ' Дзержинский ')
+\end{lstlisting}
+
+\subsection{Перечень владельцев параллельных телефонов}
+
+\textbf{Получить} перечень и общее число абонентов указанной АТС, 
 по всей ГТС, по данному району, по типам АТС имеющих параллельные телефоны, 
 только льготников имеющих параллельные телефоны.
 
 \begin{lstlisting}
-SELECT first_name, last_name, surname, gender, age
-    FROM $(ats_type_view) 
-    JOIN ats_subscribers USING(ats_id)
-    JOIN full_address USING(address_id)
-    WHERE district_name = $(district_name) AND
-        phone_type = $(phone_type) AND
-        benefit >= $(benefit);
+CREATE VIEW parallel_phone_owners AS
+    SELECT serial_no, phone_no, address_id, last_name, first_name, surname, district_name, street_name, house_no
+        FROM ats_subscribers
+        JOIN current_city USING(address_id)
+        WHERE phone_type = 'Parallel';
 \end{lstlisting}
 
-\textbf{8. Определить}, есть ли по данному адресу телефон, общее 
+Пример запроса от клиентского приложения:
+
+\begin{lstlisting}
+SELECT last_name, first_name, phone_no
+	FROM parallel_phone_owners
+	WHERE (serial_no = '6IBVG115145') AND
+		(district_name = ' Дзержинский ') AND
+		(benefit >= 0.5)
+	ORDER BY last_name ASC;
+\end{lstlisting}
+
+\subsection{Найти телефоны по адресу}
+
+\textbf{Определить}, есть ли по данному адресу телефон, общее 
 количество телефонов и (или) количество телефонов с выходом на межгород, 
 с открытым выходом на межгород в данном доме, на конкретной улице.
 
 \begin{lstlisting}
-SELECT phone_no
-    FROM phone_numbers_v
-    JOIN full_address USING(address_id)
-    LEFT JOIN subscriptions USING(phone_id)
-    LEFT JOIN service_connection USING(subscription_id)
-    WHERE street_name = $(street_name) AND
-        house_no = $(house_no) AND
-        service_name = 'Intercity call';
+CREATE VIEW intercity_phone_numbers AS
+    SELECT phone_id, address_id, phone_no, ats_id, phone_type
+        FROM phone_numbers_v
+        JOIN subscriptions USING(phone_id)
+        JOIN service_connection USING(subscription_id)
+        JOIN services USING(service_id)
+        where service_name = 'Междугородний звонок';
 \end{lstlisting}
 
-\textbf{9. Определить} город, с которым происходит большее количество 
+Примеры запросов от клиентского приложения:
+
+Для телефонов с возможностью межгорода
+\begin{lstlisting}
+SELECT phone_no, street_name, house_no
+	FROM intercity_phone_numbers
+	JOIN current_city USING(address_id)
+	WHERE (street_name = ' Аэропорт ') AND
+		(house_no = 35)
+	ORDER BY phone_no ASC;
+\end{lstlisting}
+
+Для любого телефона
+\begin{lstlisting}
+    SELECT phone_no, street_name, house_no
+	FROM phone_numbers_v
+	JOIN current_city USING(address_id)
+	WHERE (street_name = ' Аэропорт ') AND
+		(house_no = 35)
+	ORDER BY phone_no ASC;
+\end{lstlisting}
+
+\subsection{Популярный город для междугородних звонков}
+
+\textbf{Определить} город, с которым происходит большее количество 
 междугородных переговоров.
 
 \begin{lstlisting}
-WITH city_calls_count AS (
-    SELECT city_name, COUNT(address_id) AS calls_count
-    FROM call_log 
-    JOIN phone_numbers_v ON phone_numbers_v.phone_id = call_log.recipient
-    JOIN full_address USING(address_id)
-    GROUP BY city_name
-    ), 
-    city_max_calls AS (
-    SELECT MAX(calls_count)
-    FROM city_calls_count 
-    )
-SELECT city_name
-    FROM city_calls_count
-    WHERE calls_count IN (SELECT * FROM city_max_calls);
+CREATE VIEW intercity_calls_count AS
+    SELECT city_name, COUNT(*) AS calls_count 
+        FROM call_log 
+        JOIN full_address ON full_address.address_id = call_log.recipient_ats_address
+        WHERE city_name NOT IN(SELECT city_name FROM current_city GROUP BY city_name)
+        GROUP BY city_name;
 \end{lstlisting}
 
-\textbf{10. Получить} полную информацию об абонентах с заданным телефонным номером.
+Пример запроса от клиентского приложения:
 
 \begin{lstlisting}
-SELECT first_name, last_name, surname, gender, age
-    FROM subscribers
-    JOIN subscriptions USING(subscriber_id)
-    JOIN phone_numbers_v USING(phone_id)
-    WHERE phone_no = $(desired_phone_no);
+SELECT city_name, MAX(calls_count) AS max_calls_count
+	FROM intercity_calls_count
+	GROUP BY city_name;
 \end{lstlisting}
 
-\textbf{11. Получить} перечень спаренных телефонов, для которых есть 
+\subsection{Информация об абоненте по номеру телефона}
+
+\textbf{Получить} полную информацию об абонентах с заданным телефонным номером.
+
+Пример запроса от клиентского приложения:
+
+\begin{lstlisting}
+SELECT last_name, first_name
+	FROM ats_subscribers
+	WHERE (phone_no = 101)
+	ORDER BY last_name ASC;
+\end{lstlisting}
+
+\subsection{Спаренные телефоны под замену}
+
+\textbf{Получить} перечень спаренных телефонов, для которых есть 
 техническая возможность заменить их на обычные (выделить дополнительный номер).
 
 \begin{lstlisting}
-WITH free_phones_in_house AS (
+CREATE VIEW free_phones_in_house AS 
     SELECT address_id, COUNT(phone_id) AS free_phones_count
+        FROM free_phone_numbers
+        GROUP BY address_id;
+CREATE VIEW paired_phones_for_replacement AS 
+    SELECT phone_id, phone_no, address_id, district_name, street_name, house_no
         FROM phone_numbers_v
-        LEFT JOIN subscriptions USING(phone_id)
-        JOIN full_address USING(address_id)
-        WHERE subscriptions.phone_id IS NULL
-        GROUP BY address_id
-    )
-SELECT phone_no, house_no, street_name, district_name
-    FROM phone_numbers_v
-    JOIN full_address USING(address_id)
-    JOIN free_phones_in_house USING(address_id)
-    WHERE free_phones_count > 0;
+        JOIN current_city USING(address_id)
+        JOIN free_phones_in_house USING(address_id)
+        WHERE phone_type = 'Paired' AND free_phones_count > 0;
 \end{lstlisting}
+
+Пример запроса от клиентского приложения:
+
+\begin{lstlisting}
+SELECT phone_no, street_name, house_no
+	FROM paired_phones_for_replacement
+	ORDER BY phone_no ASC;
+\end{lstlisting}
+
+\subsection{Должники, которым необходимо отправить уведомление}
 
 \textbf{12. Получить} перечень и общее число должников на указанной АТС, 
 по всей ГТС, по данному району, которым следует послать письменное уведомление, 
 отключить телефон и(или) выход на межгород.
 
-\begin{lstlisting}
+Пример запроса от клиентского приложения:
 
+\begin{lstlisting}
+SELECT last_name, first_name, debt_amount
+	FROM debtors
+	WHERE (serial_no = '6IBVG115145') AND
+		(district_name = 'Дзержинский') AND
+		(debt_duration_in_days = 2) AND
+		(service_name = 'Междугородний звонок')
+	ORDER BY last_name ASC;
 \end{lstlisting}
 
 \end{document}

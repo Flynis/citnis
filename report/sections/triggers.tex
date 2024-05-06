@@ -4,7 +4,7 @@
 \chapter{Хранимые процедуры и триггеры}
 
 Все описанные в этой главе триггеры находятся в файле 
-\textbf{citnisdb-triggers.sql}.
+\textbf{citnisdb-functions.sql}.
 
 \section{Наследование}
 
@@ -175,6 +175,70 @@ CREATE TRIGGER subscription_default_service
     AFTER INSERT ON subscriptions
     FOR EACH ROW 
     EXECUTE PROCEDURE subscription_default_service_row();
+\end{lstlisting}
+
+\section{Хранимые процедуры}
+
+Для отслеживания долга абонентов нам необходимо
+работать с датами, поэтому заведем несколько 
+полезных функций.
+
+\textbf{1.\ date\_diff\_in\_days} вычиляет разницу между 
+датами в днях. 
+
+\begin{lstlisting} 
+CREATE FUNCTION date_diff_in_days(date1 date, date2 date) RETURNS int AS $$
+BEGIN
+    RETURN date_part('day', date1::timestamp - date2::timestamp)::int;
+END;
+$$ LANGUAGE plpgsql;
+\end{lstlisting}
+
+\textbf{2.\ date\_diff\_in\_months} вычиляет разницу между 
+датами в месяцах начиная с дня \textbf{start\_day}. 
+
+\begin{lstlisting}
+CREATE FUNCTION date_diff_in_months(date1 date, date2 date, start_day int) RETURNS int AS $$
+DECLARE
+    years int;
+    months int;
+BEGIN
+    years = (date_part('year', date1) - date_part('year', date2))::int;
+    months = (date_part('month', date1) - date_part('month', date2))::int;
+    RETURN years * 12 + (months + 12) % 12 + (date_part('day', date2) != start_day)::int;
+END;
+$$ LANGUAGE plpgsql;
+\end{lstlisting}
+
+\textbf{3.\ date\_with\_previous\_month} возвращает день \textbf{new\_date\_day} 
+прощлого месяца. 
+
+\begin{lstlisting}
+CREATE FUNCTION date_with_previous_month(d date, new_date_day int) RETURNS date AS $$
+BEGIN
+    RETURN make_date(
+          date_part('year', make_date(date_part('year', d)::int, date_part('month', d)::int, 1) - interval '1 day')::int,
+          date_part('month', make_date(date_part('year', d)::int, date_part('month', d)::int, 1) - interval '1 day')::int,
+          new_date_day);
+END;
+$$ LANGUAGE plpgsql;
+\end{lstlisting}
+
+\textbf{4.\ debt\_formation\_date} возвращает дату, с которой
+отсчитывается текущий долг. 
+
+\begin{lstlisting}
+CREATE FUNCTION debt_formation_date() RETURNS date AS $$
+DECLARE
+    write_off_date date;
+BEGIN
+    IF(date_part('day', current_date)::int >= 20)
+    THEN write_off_date = make_date(date_part('year', current_date)::int, date_part('month', current_date)::int, 20);
+    ELSE write_off_date = date_with_previous_month(current_date, 20);
+    END IF;
+    RETURN date_with_previous_month(write_off_date, 20);
+END;
+$$ LANGUAGE plpgsql;
 \end{lstlisting}
 
 \end{document}

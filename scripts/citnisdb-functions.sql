@@ -37,7 +37,8 @@ BEGIN
         SET org_id = NEW.org_id,
             serial_no = NEW.serial_no,
             first_phone_no = NEW.first_phone_no,
-            last_phone_no = NEW.last_phone_no;
+            last_phone_no = NEW.last_phone_no
+        WHERE ats_id = OLD.ats_id;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -93,7 +94,8 @@ BEGIN
         SET org_id = NEW.org_id,
             serial_no = NEW.serial_no,
             first_phone_no = NEW.first_phone_no,
-            last_phone_no = NEW.last_phone_no;
+            last_phone_no = NEW.last_phone_no
+        WHERE ats_id = OLD.ats_id;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -149,7 +151,8 @@ BEGIN
         SET org_id = NEW.org_id,
             serial_no = NEW.serial_no,
             first_phone_no = NEW.first_phone_no,
-            last_phone_no = NEW.last_phone_no;
+            last_phone_no = NEW.last_phone_no
+        WHERE ats_id = OLD.ats_id;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -208,10 +211,11 @@ BEGIN
     IF (NEW.phone_id != OLD.phone_id)
     THEN RETURN NULL;
     END IF;
-    UPDATE phone
+    UPDATE phones
         SET ats_id = NEW.ats_id,
             address_id = NEW.address_id,
-            phone_no = NEW.phone_no;
+            phone_no = NEW.phone_no
+        WHERE phone_id = OLD.phone_id;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -266,9 +270,11 @@ BEGIN
     UPDATE phones
         SET ats_id = NEW.ats_id,
             address_id = NEW.address_id,
-            phone_no = NEW.phone_no;
+            phone_no = NEW.phone_no
+        WHERE phone_id = OLD.phone_id;
     UPDATE phone_numbers
-        SET phone_type = NEW.phone_type;
+        SET phone_type = NEW.phone_type
+        WHERE phone_id = OLD.phone_id;
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -404,3 +410,45 @@ CREATE TRIGGER subscription_default_service
     AFTER INSERT ON subscriptions
     FOR EACH ROW 
     EXECUTE PROCEDURE subscription_default_service_row();
+
+/*
+ * Functions
+*/
+
+CREATE FUNCTION date_diff_in_days(date1 date, date2 date) RETURNS int AS $$
+BEGIN
+    RETURN date_part('day', date1::timestamp - date2::timestamp)::int;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION date_diff_in_months(date1 date, date2 date, start_day int) RETURNS int AS $$
+DECLARE
+    years int;
+    months int;
+BEGIN
+    years = (date_part('year', date1) - date_part('year', date2))::int;
+    months = (date_part('month', date1) - date_part('month', date2))::int;
+    RETURN years * 12 + (months + 12) % 12 + (date_part('day', date2) != start_day)::int;
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION date_with_previous_month(d date, new_date_day int) RETURNS date AS $$
+BEGIN
+    RETURN make_date(
+          date_part('year', make_date(date_part('year', d)::int, date_part('month', d)::int, 1) - interval '1 day')::int,
+          date_part('month', make_date(date_part('year', d)::int, date_part('month', d)::int, 1) - interval '1 day')::int,
+          new_date_day);
+END;
+$$ LANGUAGE plpgsql;
+
+CREATE FUNCTION debt_formation_date() RETURNS date AS $$
+DECLARE
+    write_off_date date;
+BEGIN
+    IF(date_part('day', current_date)::int >= 20)
+    THEN write_off_date = make_date(date_part('year', current_date)::int, date_part('month', current_date)::int, 20);
+    ELSE write_off_date = date_with_previous_month(current_date, 20);
+    END IF;
+    RETURN date_with_previous_month(write_off_date, 20);
+END;
+$$ LANGUAGE plpgsql;
