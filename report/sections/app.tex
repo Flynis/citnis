@@ -48,7 +48,8 @@
 Добавляет нового абонента в БД. Реализован в виде обычного INSERT.
 
 \begin{lstlisting}
-INSERT INTO subscribers (last_name, first_name, surname, gender, age, benefit)
+INSERT INTO subscribers (last_name, first_name, surname, 
+    gender, age, benefit)
 	VALUES ('Ландау', 'Пелагея', 'Сергеевна', 'f', '25', 0.5);
 \end{lstlisting}
 
@@ -57,7 +58,10 @@ INSERT INTO subscribers (last_name, first_name, surname, gender, age, benefit)
 Добавляет новый номер телефона на указанную АТС.
 
 \begin{lstlisting}
-CREATE FUNCTION create_phone_number(ats_serial text, phone_no int, street text, house int, phone_type text) RETURNS void AS $$
+CREATE FUNCTION create_phone_number(ats_serial text, 
+    phone_no int, street text, house int, 
+    phone_type text) 
+RETURNS void AS $$
 DECLARE
     ats record;
     address record;
@@ -81,8 +85,10 @@ BEGIN
             WHERE street_name = street
                 AND house_no = house;
     END IF;
-    INSERT INTO phone_numbers_v (ats_id, phone_no, address_id, phone_type)
-        VALUES(ats.ats_id, phone_no, address.address_id, phone_type);
+    INSERT INTO phone_numbers_v (ats_id, phone_no, 
+        address_id, phone_type)
+        VALUES(ats.ats_id, phone_no, address.address_id, 
+            phone_type);
 END;
 $$ LANGUAGE plpgsql;
 \end{lstlisting}
@@ -98,7 +104,9 @@ SELECT create_phone_number('7IBFA115116', 5900103,
 Изменяет тип конечного устройства с указанным номером.
 
 \begin{lstlisting}
-CREATE FUNCTION change_phone_type(ats_serial text, phone_number int, phone_t text) RETURNS void AS $$
+CREATE FUNCTION change_phone_type(ats_serial text, 
+    phone_number int, phone_t text) 
+RETURNS void AS $$
 DECLARE
     ats record;
     phone record;
@@ -128,7 +136,9 @@ SELECT change_phone_type('7IBFA115116',
 Добавляет новый таксофон на указанную АТС.
 
 \begin{lstlisting}
-CREATE FUNCTION create_payphone(ats_serial text, phone_no int, street text, house int) RETURNS void AS $$
+CREATE FUNCTION create_payphone(ats_serial text, 
+    phone_no int, street text, house int) 
+RETURNS void AS $$
 DECLARE
     ats record;
     address record;
@@ -169,7 +179,10 @@ SELECT create_payphone('6IBVG115145',
 Подключает указанному абоненту междугородние звонки.
 
 \begin{lstlisting}
-CREATE FUNCTION enable_intercity_calls(ats_serial text, phone_number int, subscriber_last_name text, subscriber_first_name text) RETURNS void AS $$
+CREATE FUNCTION enable_intercity_calls(ats_serial text, 
+    phone_number int, subscriber_last_name text, 
+    subscriber_first_name text) 
+RETURNS void AS $$
 DECLARE
     ats record;
     phone record;
@@ -191,7 +204,8 @@ BEGIN
         FROM subscriptions
         WHERE subscriber_id = subscriber.subscriber_id
             AND phone_id = phone.phone_id;
-    INSERT INTO service_connection (subscription_id, service_id)
+    INSERT INTO service_connection (subscription_id, 
+        service_id)
         VALUES(subscription.subscription_id, 2);
 END;
 $$ LANGUAGE plpgsql;
@@ -208,7 +222,10 @@ SELECT enable_intercity_calls('7IBFA115116',
 Отключает у указанного абонента междугородние звонки.
 
 \begin{lstlisting}
-CREATE FUNCTION disable_intercity_calls(ats_serial text, phone_number int, subscriber_last_name text, subscriber_first_name text) RETURNS void AS $$
+CREATE FUNCTION disable_intercity_calls(ats_serial text, 
+    phone_number int, subscriber_last_name text, 
+    subscriber_first_name text) 
+RETURNS void AS $$
 DECLARE
     ats record;
     phone record;
@@ -231,7 +248,8 @@ BEGIN
         WHERE subscriber_id = subscriber.subscriber_id
             AND phone_id = phone.phone_id;
     DELETE FROM service_connection
-        WHERE subscription_id = subscription.subscription_id
+        WHERE 
+            subscription_id = subscription.subscription_id
             AND service_id = 2;
 END;
 $$ LANGUAGE plpgsql;
@@ -248,7 +266,11 @@ SELECT disable_intercity_calls('7IBFA115116',
 Оформляет номер телефона на указанного абонента.
 
 \begin{lstlisting}
-CREATE FUNCTION register_phone_number_for_subscriber(ats_serial text, phone_number int, sub_last_name text, sub_first_name text, sub_apartment int) RETURNS void AS $$
+CREATE FUNCTION register_phone_number_for_subscriber(
+    ats_serial text, phone_number int, 
+    sub_last_name text, sub_first_name text, 
+    sub_apartment int) 
+RETURNS void AS $$
 DECLARE
     ats record;
     phone record;
@@ -265,8 +287,10 @@ BEGIN
         FROM subscribers
         WHERE last_name = sub_last_name
             AND first_name = sub_first_name;
-    INSERT INTO subscriptions (phone_id, subscriber_id, apartment)
-        VALUES(phone.phone_id, subscriber.subscriber_id, sub_apartment);
+    INSERT INTO subscriptions (phone_id, subscriber_id, 
+        apartment)
+        VALUES(phone.phone_id, 
+            subscriber.subscriber_id, sub_apartment);
 END;
 $$ LANGUAGE plpgsql;
 \end{lstlisting}

@@ -57,7 +57,8 @@ Payphone и Phone number.
 вне диапозона. Поэтому запретим уменьшать диапозон номеров.
 
 \begin{lstlisting}
-CREATE FUNCTION prohibit_ats_reduction_row() RETURNS trigger AS $$
+CREATE FUNCTION prohibit_ats_reduction_row()
+RETURNS trigger AS $$
 BEGIN
     IF (NEW.first_phone_no > OLD.first_phone_no OR
          NEW.last_phone_no < OLD.last_phone_no)
@@ -68,14 +69,16 @@ END;
 $$ LANGUAGE plpgsql;
 CREATE TRIGGER prohibit_ats_reduction 
     BEFORE UPDATE ON ats
-    FOR EACH ROW EXECUTE PROCEDURE prohibit_ats_reduction_row();
+    FOR EACH ROW
+    EXECUTE PROCEDURE prohibit_ats_reduction_row();
 \end{lstlisting}
 
 \textbf{2.} При вставке/изменении телефона мы должны проверить, 
 что номер телефона попадает в допустимый у АТС диапозон.
 
 \begin{lstlisting}
-CREATE FUNCTION check_phone_number_row() RETURNS trigger AS $$
+CREATE FUNCTION check_phone_number_row()
+RETURNS trigger AS $$
 DECLARE
     rec record;
 BEGIN
@@ -96,7 +99,8 @@ CREATE TRIGGER check_phone_number
 необходимо проверить, что им владеет не больше одного абонента.
 
 \begin{lstlisting}
-CREATE FUNCTION phone_type_update_row() RETURNS trigger AS $$
+CREATE FUNCTION phone_type_update_row()
+RETURNS trigger AS $$
 DECLARE
     rec record;
 BEGIN
@@ -124,7 +128,8 @@ CREATE TRIGGER phone_type_update
 будем сразу подключать услугу ``Звонок''.
 
 \begin{lstlisting}
-CREATE FUNCTION subscription_phone_check_row() RETURNS trigger AS $$
+CREATE FUNCTION subscription_phone_check_row()
+RETURNS trigger AS $$
 DECLARE
     rec record;
     ph record;
@@ -164,9 +169,11 @@ CREATE TRIGGER subscription_phone_check
     FOR EACH ROW 
     EXECUTE PROCEDURE subscription_phone_check_row();
 
-CREATE FUNCTION subscription_default_service_row() RETURNS trigger AS $$
+CREATE FUNCTION subscription_default_service_row()
+RETURNS trigger AS $$
 BEGIN
-    INSERT INTO service_connection (subscription_id, service_id)
+    INSERT INTO service_connection 
+        (subscription_id, service_id)
         VALUES(NEW.subscription_id, 1);
     RETURN NEW;
 END;
@@ -183,43 +190,57 @@ CREATE TRIGGER subscription_default_service
 работать с датами, поэтому заведем несколько 
 полезных функций.
 
-\textbf{1.\ date\_diff\_in\_days} вычиляет разницу между 
+\textbf{1.\ date\_diff\_in\_days} вычисляет разницу между 
 датами в днях. 
 
 \begin{lstlisting} 
-CREATE FUNCTION date_diff_in_days(date1 date, date2 date) RETURNS int AS $$
+CREATE FUNCTION date_diff_in_days(date1 date, date2 date)
+RETURNS int AS $$
 BEGIN
-    RETURN date_part('day', date1::timestamp - date2::timestamp)::int;
+    RETURN date_part(
+        'day', 
+        date1::timestamp - date2::timestamp)::int;
 END;
 $$ LANGUAGE plpgsql;
 \end{lstlisting}
 
-\textbf{2.\ date\_diff\_in\_months} вычиляет разницу между 
+\textbf{2.\ date\_diff\_in\_months} вычисляет разницу между 
 датами в месяцах начиная с дня \textbf{start\_day}. 
 
 \begin{lstlisting}
-CREATE FUNCTION date_diff_in_months(date1 date, date2 date, start_day int) RETURNS int AS $$
+CREATE FUNCTION date_diff_in_months(date1 date, date2 date,
+    start_day int) RETURNS int AS $$
 DECLARE
     years int;
     months int;
 BEGIN
-    years = (date_part('year', date1) - date_part('year', date2))::int;
-    months = (date_part('month', date1) - date_part('month', date2))::int;
-    RETURN years * 12 + (months + 12) % 12 + (date_part('day', date2) != start_day)::int;
+    years = (date_part('year', date1) - 
+        date_part('year', date2))::int;
+    months = (date_part('month', date1) - 
+        date_part('month', date2))::int;
+    RETURN years * 12 + (months + 12) % 12 + 
+        (date_part('day', date2) != start_day)::int;
 END;
 $$ LANGUAGE plpgsql;
 \end{lstlisting}
 
 \textbf{3.\ date\_with\_previous\_month} возвращает день \textbf{new\_date\_day} 
-прощлого месяца. 
+прошлого месяца. 
 
 \begin{lstlisting}
-CREATE FUNCTION date_with_previous_month(d date, new_date_day int) RETURNS date AS $$
+CREATE FUNCTION date_with_previous_month(d date,
+    new_date_day int) RETURNS date AS $$
 BEGIN
     RETURN make_date(
-          date_part('year', make_date(date_part('year', d)::int, date_part('month', d)::int, 1) - interval '1 day')::int,
-          date_part('month', make_date(date_part('year', d)::int, date_part('month', d)::int, 1) - interval '1 day')::int,
-          new_date_day);
+        date_part('year', make_date(
+            date_part('year', d)::int, 
+            date_part('month', d)::int, 
+            1) - interval '1 day')::int,
+        date_part('month', make_date(
+            date_part('year', d)::int, 
+            date_part('month', d)::int, 
+            1) - interval '1 day')::int,
+        new_date_day);
 END;
 $$ LANGUAGE plpgsql;
 \end{lstlisting}
@@ -233,8 +254,11 @@ DECLARE
     write_off_date date;
 BEGIN
     IF(date_part('day', current_date)::int >= 20)
-    THEN write_off_date = make_date(date_part('year', current_date)::int, date_part('month', current_date)::int, 20);
-    ELSE write_off_date = date_with_previous_month(current_date, 20);
+    THEN write_off_date = make_date(
+        date_part('year', current_date)::int, 
+        date_part('month', current_date)::int, 20);
+    ELSE write_off_date = date_with_previous_month(
+        current_date, 20);
     END IF;
     RETURN date_with_previous_month(write_off_date, 20);
 END;
