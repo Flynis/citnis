@@ -1,3 +1,7 @@
+INSERT INTO services (service_name, service_cost)
+        VALUES ('Звонок', 200),
+               ('Междугородний звонок', 400);
+
 INSERT INTO organizations (org_name)
     VALUES ('Городская электросвязь'),
             ('УМВД НСО'),

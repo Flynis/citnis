@@ -5,7 +5,8 @@
 
 Приложение написано на языке Java. Для реализации пользовательского
 интерфейса использован JavaFX, а для обращения к базе 
-данных - PostgreSQL JDBC Driver.
+данных - PostgreSQL JDBC Driver. Исходный код находится в директории 
+\textbf{app}.
 
 Приложение представляет из себя набор страниц (экранов), 
 через которые пользователь может обратиться к БД, 
@@ -14,12 +15,47 @@
 их обрабатывая, т.е. приложение это просто фронтенд БД.
 
 При старте приложение загружает редко обновляемые данные, 
-например: серийные номера АТС, названия районов и улиц, 
+такие как серийные номера АТС, названия районов и улиц, 
 чтобы упростить выбор пользователю. 
 Далее эти данные периодически заново запрашиваются.
 Запросы ``Статистика по должникам'' и 
 ``Популярный город для междугородних звонков'' (4 и 9) 
-также автоматически получаются с БД.
+также автоматически получаются с БД. Текст отправляемых запросов:
+
+\begin{lstlisting}
+SELECT serial_no, org_name
+	FROM ats_owners
+	ORDER BY org_name;
+
+SELECT serial_no, org_name
+	FROM ats_owners
+	JOIN city_ats USING(ats_id)
+	ORDER BY org_name;
+
+SELECT district_name
+	FROM current_city
+	GROUP BY district_name;
+
+SELECT street_name
+	FROM current_city
+	GROUP BY street_name;
+
+SELECT serial_no, MAX(total_debt) AS max_total_debt
+	FROM ats_debt_stat
+	GROUP BY serial_no;
+
+SELECT serial_no, MAX(debtors_count) AS max_debtors_count
+	FROM ats_debt_stat
+	GROUP BY serial_no;
+
+SELECT serial_no, MIN(debtors_count) AS min_debtors_count
+	FROM ats_debt_stat
+	GROUP BY serial_no;
+
+SELECT city_name, MAX(calls_count) AS max_calls_count
+	FROM intercity_calls_count
+	GROUP BY city_name;
+\end{lstlisting}
 
 \section{Запросы}
 
